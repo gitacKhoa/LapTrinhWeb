@@ -1,0 +1,29 @@
+CREATE DATABASE IF NOT EXISTS diem_thi;
+USE diem_thi;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ho_ten VARCHAR(100) NOT NULL,
+  mssv VARCHAR(20) UNIQUE,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  mat_khau VARCHAR(255) NOT NULL,
+  vai_tro ENUM('admin', 'giao_vien', 'sinh_vien') NOT NULL DEFAULT 'sinh_vien',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS mon_hoc (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ma_mon VARCHAR(20) UNIQUE NOT NULL,
+  ten_mon VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS diem (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sinh_vien_id INT NOT NULL,
+  mon_hoc_id INT NOT NULL,
+  diem_giua_ky DECIMAL(4,2),
+  diem_cuoi_ky DECIMAL(4,2),
+  diem_tong_ket DECIMAL(4,2),
+  FOREIGN KEY (sinh_vien_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (mon_hoc_id) REFERENCES mon_hoc(id) ON DELETE CASCADE
+);
