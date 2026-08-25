@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses — Academic Record</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/design-system.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="system-name">Academic Record</div>
+      <div class="system-tag">ADMIN CONSOLE</div>
+    </div>
+    <div class="sidebar-role">
+      <div class="label">Đăng nhập với vai trò</div>
+      <div class="value">Administrator</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html">Tổng quan hệ thống</a>
+      <a href="students.html">Sinh viên</a>
+      <a href="lecturers.html">Giảng viên</a>
+      <a href="courses.html" class="active">Học phần</a>
+      <a href="exams.html">Kỳ thi / Học kỳ</a>
+      <a href="grade-approval.html">Duyệt điểm</a>
+      <a href="system-reports.html">Báo cáo hệ thống</a>
+    </nav>
+    <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Tìm mã học phần, tên học phần...">
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
+        <div class="topbar-user"><div class="avatar">AD</div><div class="who"><div class="name">Admin Trần Văn Khoa</div><div class="role">Phòng Đào tạo</div></div></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-header page-header-row">
+        <div>
+          <div class="eyebrow">ADMIN / COURSE MANAGEMENT</div>
+          <h1>Courses</h1>
+          <div class="sub">96 học phần đang mở trong Học kỳ 1, 2026–2027</div>
+        </div>
+        <button class="btn btn-primary">+ Thêm học phần</button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-inline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="courseSearch" placeholder="Tìm mã hoặc tên học phần">
+        </div>
+        <select id="filterStatus">
+          <option value="">Tất cả trạng thái</option>
+          <option value="draft">Nháp</option>
+          <option value="entering">Đang nhập</option>
+          <option value="review">Đang duyệt</option>
+          <option value="published">Đã công bố</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã HP</th><th>Tên học phần</th><th class="num">TC</th><th>Khoa</th>
+                <th>Giảng viên</th><th class="num">Sinh viên</th><th>Trạng thái</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="coursesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  const body = document.getElementById('coursesBody');
+  MOCK.courses.forEach(c => {
+    const b = statusBadge(c.status);
+    const tr = document.createElement('tr');
+    tr.dataset.status = c.status;
+    tr.innerHTML = `
+      <td class="id-cell">${c.code}</td>
+      <td class="name-cell">${c.name}</td>
+      <td class="num mono">${c.credits}</td>
+      <td>${c.dept}</td>
+      <td>${c.lecturer}</td>
+      <td class="num mono">${c.students}</td>
+      <td><span class="badge ${b.cls}">${b.label}</span></td>
+      <td><a href="#" class="btn btn-ghost btn-sm">Xem kết quả</a></td>`;
+    body.appendChild(tr);
+  });
+  initTableSearch(document.getElementById('courseSearch'), body);
+  initFilterSelect(document.getElementById('filterStatus'), body, 'status');
+</script>
+</body>
+</html>

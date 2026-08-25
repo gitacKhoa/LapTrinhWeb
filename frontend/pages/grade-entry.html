@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhập điểm — IT4409 — Academic Record</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/design-system.css">
+<style>
+  .grade-cell { position: relative; }
+  .grade-input {
+    width: 56px;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-align: right;
+    background: transparent;
+    color: var(--navy);
+  }
+  .grade-input:focus { border-color: var(--blue); background: #fff; }
+  .grade-input.invalid { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  .grade-input.empty-warn { background: var(--warning-bg); }
+  .row-flag td { background: var(--warning-bg) !important; }
+  .class-meta { display: flex; gap: 28px; margin-bottom: 20px; flex-wrap: wrap; }
+  .class-meta .m-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--neutral); }
+  .class-meta .m-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .hist-bar { display:flex; align-items:flex-end; gap:6px; height:90px; }
+  .hist-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .hist-col .bar { width:100%; background: var(--blue); border-radius: 3px 3px 0 0; }
+  .hist-col .lbl { font-size: 10.5px; color: var(--neutral); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="system-name">Academic Record</div>
+      <div class="system-tag">LECTURER</div>
+    </div>
+    <div class="sidebar-role">
+      <div class="label">Đăng nhập với vai trò</div>
+      <div class="value">Giảng viên</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="lecturer-dashboard.html">Tổng quan giảng dạy</a>
+      <a href="grade-entry.html" class="active">Nhập điểm</a>
+      <a href="#">Học phần của tôi</a>
+      <a href="#">Thống kê lớp học</a>
+    </nav>
+    <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Tìm sinh viên trong lớp...">
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="breadcrumb"><a href="lecturer-dashboard.html">Tổng quan giảng dạy</a> / Nhập điểm</div>
+      <div class="page-header page-header-row">
+        <div>
+          <div class="eyebrow">GRADE ENTRY</div>
+          <h1>CS101 — Lập trình Web</h1>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-sm" id="undoBtn">Undo</button>
+          <button class="btn btn-secondary" id="saveDraftBtn">Save draft</button>
+          <button class="btn btn-primary" id="submitBtn">Submit</button>
+        </div>
+      </div>
+
+      <div class="class-meta">
+        <div><div class="m-label">Class</div><div class="m-value">D23CQCN01</div></div>
+        <div><div class="m-label">Semester</div><div class="m-value">2026 — Học kỳ 1</div></div>
+        <div><div class="m-label">Lecturer</div><div class="m-value">TS. Nguyễn Văn A</div></div>
+        <div><div class="m-label">Number of students</div><div class="m-value" id="studentCount">—</div></div>
+      </div>
+
+      <div class="tabs" id="entryTabs">
+        <button class="active" data-tab="entry">Nhập điểm</button>
+        <button data-tab="review">Review điểm</button>
+      </div>
+
+      <!-- TAB: ENTRY -->
+      <div id="panelEntry" style="margin-top:18px;">
+        <div class="panel">
+          <div class="data-table-wrap">
+            <table class="data-table" id="entryTable">
+              <thead>
+                <tr>
+                  <th>STT</th><th>MSSV</th><th>Họ tên</th>
+                  <th class="num">Chuyên cần</th><th class="num">Giữa kỳ</th><th class="num">Cuối kỳ</th>
+                  <th class="num">Tổng kết</th><th>Xếp loại</th>
+                </tr>
+              </thead>
+              <tbody id="entryBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="field" style="max-width:none; margin-top:16px;">
+          <div class="hint">Điểm hợp lệ trong khoảng 0–10. Ô nhập sai (VD: 11.5) sẽ được đánh dấu đỏ ngay lập tức. Có thể dùng phím Tab để di chuyển giữa các ô.</div>
+        </div>
+      </div>
+
+      <!-- TAB: REVIEW -->
+      <div id="panelReview" style="display:none; margin-top:18px;">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header"><h2>Class Statistics</h2></div>
+            <div class="panel-body">
+              <div class="hist-bar" id="histChart"></div>
+              <div class="hr-thin" style="margin:16px 0;"></div>
+              <div class="grid-3">
+                <div><div class="eyebrow">MEAN</div><div style="font-size:20px; font-weight:700;" id="statMean">—</div></div>
+                <div><div class="eyebrow">MEDIAN</div><div style="font-size:20px; font-weight:700;" id="statMedian">—</div></div>
+                <div><div class="eyebrow">PASS RATE</div><div style="font-size:20px; font-weight:700;" id="statPass">—</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Điểm cần kiểm tra</h2></div>
+            <div class="panel-body" id="anomalyList"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  const state = JSON.parse(JSON.stringify(MOCK.classIT4409));
+  const entryBody = document.getElementById('entryBody');
+  document.getElementById('studentCount').textContent = state.length;
+
+  function computeTotal(row) {
+    if (row.attendance == null || row.midterm == null || row.final == null) return null;
+    return +(row.attendance * 0.1 + row.midterm * 0.3 + row.final * 0.6).toFixed(2);
+  }
+
+  function renderRow(row, idx) {
+    const total = computeTotal(row);
+    const g = gradeLevel(total);
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+    if (row.note) tr.classList.add('row-flag');
+
+    const cell = (field, val) => `
+      <td class="num grade-cell">
+        <input class="grade-input" data-field="${field}" data-idx="${idx}" type="text" value="${val ?? ''}">
+      </td>`;
+
+    tr.innerHTML = `
+      <td class="mono">${idx + 1}</td>
+      <td class="id-cell">${row.mssv}</td>
+      <td class="name-cell">${row.name}</td>
+      ${cell('attendance', row.attendance)}
+      ${cell('midterm', row.midterm)}
+      ${cell('final', row.final)}
+      <td class="num mono total-cell">${total ?? '—'}</td>
+      <td><span class="badge ${g.cls}">${g.label}</span></td>`;
+    return tr;
+  }
+
+  function renderAll() {
+    entryBody.innerHTML = '';
+    state.forEach((row, idx) => entryBody.appendChild(renderRow(row, idx)));
+    attachInputEvents();
+  }
+
+  function attachInputEvents() {
+    entryBody.querySelectorAll('.grade-input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const idx = +inp.dataset.idx;
+        const field = inp.dataset.field;
+        const raw = inp.value.trim();
+        const num = raw === '' ? null : parseFloat(raw);
+        const invalid = raw !== '' && (isNaN(num) || num < 0 || num > 10);
+
+        inp.classList.toggle('invalid', invalid);
+        if (!invalid) {
+          state[idx][field] = num;
+          const total = computeTotal(state[idx]);
+          const tr = inp.closest('tr');
+          tr.querySelector('.total-cell').textContent = total ?? '—';
+          const g = gradeLevel(total);
+          tr.querySelector('.badge').outerHTML = `<span class="badge ${g.cls}">${g.label}</span>`;
+        }
+      });
+    });
+  }
+
+  renderAll();
+
+  document.getElementById('saveDraftBtn').addEventListener('click', () => showToast('Đã lưu nháp bảng điểm IT4409.'));
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const hasInvalid = entryBody.querySelector('.grade-input.invalid');
+    if (hasInvalid) { showToast('Còn ô điểm không hợp lệ — vui lòng kiểm tra lại trước khi gửi.'); return; }
+    showToast('Đã gửi bảng điểm IT4409 để duyệt.');
+  });
+  document.getElementById('undoBtn').addEventListener('click', () => { renderAll(); showToast('Đã hoàn tác thay đổi.'); });
+
+  // TABS
+  const tabs = document.getElementById('entryTabs');
+  const panels = { entry: document.getElementById('panelEntry'), review: document.getElementById('panelReview') };
+  initTabs(tabs, panels);
+
+  tabs.querySelector('[data-tab="review"]').addEventListener('click', renderReview);
+
+  function renderReview() {
+    const totals = state.map(computeTotal).filter(v => v !== null);
+    const mean = (totals.reduce((a,b)=>a+b,0) / totals.length).toFixed(2);
+    const sorted = [...totals].sort((a,b)=>a-b);
+    const median = sorted.length % 2 ? sorted[(sorted.length-1)/2] : ((sorted[sorted.length/2-1]+sorted[sorted.length/2])/2).toFixed(2);
+    const passRate = Math.round(totals.filter(t => t >= 4).length / totals.length * 100);
+
+    document.getElementById('statMean').textContent = mean;
+    document.getElementById('statMedian').textContent = median;
+    document.getElementById('statPass').textContent = passRate + '%';
+
+    // histogram buckets
+    const buckets = [0,0,0,0,0]; // <4, 4-5.5, 5.5-7, 7-8.5, 8.5-10
+    totals.forEach(t => {
+      if (t < 4) buckets[0]++;
+      else if (t < 5.5) buckets[1]++;
+      else if (t < 7) buckets[2]++;
+      else if (t < 8.5) buckets[3]++;
+      else buckets[4]++;
+    });
+    const max = Math.max(...buckets, 1);
+    const labels = ['<4','4–5.5','5.5–7','7–8.5','8.5–10'];
+    const hist = document.getElementById('histChart');
+    hist.innerHTML = '';
+    buckets.forEach((count, i) => {
+      const col = document.createElement('div');
+      col.className = 'hist-col';
+      const h = Math.max(4, (count/max)*74);
+      col.innerHTML = `<div class="mono" style="font-size:11px;">${count}</div><div class="bar" style="height:${h}px;"></div><div class="lbl">${labels[i]}</div>`;
+      hist.appendChild(col);
+    });
+
+    // anomalies
+    const anomalyList = document.getElementById('anomalyList');
+    anomalyList.innerHTML = '';
+    const flagged = state.filter(r => r.note || computeTotal(r) === null || computeTotal(r) < 4 || computeTotal(r) >= 9.5);
+    if (!flagged.length) {
+      anomalyList.innerHTML = `<div class="state-block"><div class="state-title">Không phát hiện điểm bất thường</div><div class="state-desc">Bảng điểm sẵn sàng để gửi duyệt.</div></div>`;
+      return;
+    }
+    flagged.forEach(r => {
+      const total = computeTotal(r);
+      const reason = r.note || (total === null ? 'Thiếu thành phần điểm' : total < 4 ? 'Điểm quá thấp' : 'Điểm quá cao — kiểm tra lại');
+      const div = document.createElement('div');
+      div.className = 'timeline-item';
+      div.innerHTML = `<div class="timeline-dot" style="background:var(--warning);"></div>
+        <div><div class="text"><span class="mono">${r.mssv}</span> — ${r.name}</div><div class="time">${reason}</div></div>`;
+      anomalyList.appendChild(div);
+    });
+  }
+</script>
+</body>
+</html>

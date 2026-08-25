@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập — Academic Record</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <style>
+    body {
+      min-height: 100vh;
+    }
+
+    .login-shell {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 860px) {
+      .login-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .login-left {
+        display: none;
+      }
+    }
+
+    .login-left {
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 32px);
+      pointer-events: none;
+    }
+
+    .login-left-top .eyebrow {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .login-left-top .system-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+    }
+
+    .login-hero {
+      position: relative;
+    }
+
+    .login-hero h1 {
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      margin: 0 0 18px;
+    }
+
+    .login-hero .subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    .login-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 40px;
+      position: relative;
+    }
+
+    .login-meta .meta-item .meta-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+    }
+
+    .login-meta .meta-item .meta-value {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .login-left-foot {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+      position: relative;
+    }
+
+    .login-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: var(--bg);
+    }
+
+    .login-panel {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-panel .panel-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .login-panel .panel-sub {
+      font-size: 13px;
+      color: var(--neutral);
+      margin-bottom: 28px;
+    }
+
+    .role-hint {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .role-hint button {
+      flex: 1;
+      padding: 8px 4px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--neutral);
+      transition: all var(--dur) var(--ease);
+    }
+
+    .role-hint button.active {
+      border-color: var(--navy);
+      color: var(--navy);
+      background: var(--blue-soft);
+    }
+
+    .row-between {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: -6px 0 20px;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--neutral);
+    }
+
+    .remember input {
+      width: auto;
+    }
+
+    .forgot {
+      font-size: 12.5px;
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .login-submit {
+      width: 100%;
+      justify-content: center;
+      padding: 11px;
+      font-size: 13.5px;
+    }
+
+    .login-foot-note {
+      margin-top: 28px;
+      font-size: 11.5px;
+      color: var(--neutral);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-shell">
+    <div class="login-left">
+      <div class="login-left-top">
+        <div class="eyebrow">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
+        <div class="system-tag">ACADEMIC RECORD / 2026 / SEMESTER 01</div>
+      </div>
+
+      <div class="login-hero">
+        <h1>ACADEMIC<br>RECORD</h1>
+        <div class="subtitle">Academic Result Management System — Hệ thống quản lý và tra cứu điểm thi chính thức của
+          nhà trường.</div>
+
+        <div class="login-meta">
+          <div class="meta-item">
+            <div class="meta-label">Năm học</div>
+            <div class="meta-value">2026 — 2027</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Học kỳ hiện tại</div>
+            <div class="meta-value">Học kỳ 1</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Trạng thái</div>
+            <div class="meta-value">Đang nhập điểm</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-left-foot">© 2026 Phòng Đào tạo — Hệ thống quản lý điểm thi nội bộ</div>
+    </div>
+
+    <div class="login-right">
+      <div class="login-panel">
+        <div class="panel-title">Đăng nhập hệ thống</div>
+        <div class="panel-sub">Chọn vai trò và nhập thông tin tài khoản được cấp.</div>
+
+        <div class="role-hint" id="roleHint">
+          <button type="button" class="active" data-role="student">Sinh viên</button>
+          <button type="button" data-role="lecturer">Giảng viên</button>
+          <button type="button" data-role="admin">Admin</button>
+        </div>
+
+        <form id="loginForm">
+          <div class="field">
+            <label for="account">Mã tài khoản</label>
+            <input id="account" type="text" placeholder="VD: 22110234" autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+          </div>
+
+          <div class="row-between">
+            <label class="remember"><input type="checkbox" checked> Ghi nhớ đăng nhập</label>
+            <a class="forgot" href="#">Quên mật khẩu?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-submit">Đăng nhập</button>
+        </form>
+
+        <div class="login-foot-note">Hệ thống chỉ dành cho cán bộ, giảng viên và sinh viên của trường.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const roleHint = document.getElementById('roleHint');
+    let selectedRole = 'student';
+    roleHint.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        roleHint.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+      });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dest = { student: 'student-dashboard.html', lecturer: 'lecturer-dashboard.html', admin: 'admin-dashboard.html' };
+      window.location.href = dest[selectedRole];
+    });
+  </script>
+</body>
+
+</html>

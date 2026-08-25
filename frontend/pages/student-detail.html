@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Detail — Academic Record</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/design-system.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="system-name">Academic Record</div>
+      <div class="system-tag">ADMIN CONSOLE</div>
+    </div>
+    <div class="sidebar-role">
+      <div class="label">Đăng nhập với vai trò</div>
+      <div class="value">Administrator</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-dashboard.html">Tổng quan hệ thống</a>
+      <a href="students.html" class="active">Sinh viên</a>
+      <a href="lecturers.html">Giảng viên</a>
+      <a href="courses.html">Học phần</a>
+      <a href="#">Kỳ thi / Học kỳ</a>
+      <a href="#">Duyệt điểm</a>
+      <a href="#">Báo cáo hệ thống</a>
+    </nav>
+    <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Tìm MSSV, họ tên...">
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user"><div class="avatar">AD</div><div class="who"><div class="name">Admin Trần Văn Khoa</div><div class="role">Phòng Đào tạo</div></div></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="breadcrumb"><a href="students.html">Students</a> / <span id="crumbId">—</span></div>
+      <div class="page-header">
+        <div class="eyebrow" id="studentIdLabel">STUDENT ID</div>
+        <h1 id="studentName">—</h1>
+        <div class="sub" id="studentMeta">—</div>
+      </div>
+
+      <div class="stat-row" id="summaryRow"></div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Academic History</h2></div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Mã HP</th><th>Học phần</th><th class="num">TC</th><th class="num">Tổng kết</th><th>Điểm chữ</th><th>Học kỳ</th></tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || MOCK.students[0].id;
+  const s = MOCK.students.find(x => x.id === id) || MOCK.students[0];
+
+  document.getElementById('crumbId').textContent = s.id;
+  document.getElementById('studentIdLabel').textContent = `STUDENT ID — ${s.id}`;
+  document.getElementById('studentName').textContent = s.name;
+  document.getElementById('studentMeta').textContent = `${s.major} — Khóa ${s.cohort}`;
+
+  const remaining = 130 - s.credits;
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="stat-cell"><div class="stat-label">GPA</div><div class="stat-value">${s.gpa.toFixed(2)}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tổng tín chỉ</div><div class="stat-value">${s.credits}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tín chỉ đạt</div><div class="stat-value">${s.credits}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tín chỉ còn thiếu</div><div class="stat-value">${remaining > 0 ? remaining : 0}</div></div>`;
+
+  const body = document.getElementById('historyBody');
+  MOCK.myGrades.forEach(g => {
+    const tr = document.createElement('tr');
+    const published = g.status === 'published';
+    tr.innerHTML = `
+      <td class="id-cell">${g.code}</td>
+      <td class="name-cell">${g.name}</td>
+      <td class="num mono">${g.credits}</td>
+      <td class="num mono">${published ? g.total : '—'}</td>
+      <td>${published ? `<span class="badge success">${g.letter}</span>` : `<span class="badge neutral">Chưa công bố</span>`}</td>
+      <td class="mono">${g.semester}</td>`;
+    body.appendChild(tr);
+  });
+</script>
+</body>
+</html>
