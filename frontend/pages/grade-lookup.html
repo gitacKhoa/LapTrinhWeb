@@ -53,8 +53,8 @@
       <div class="page-header"><div class="eyebrow">STUDENT PORTAL / ACADEMIC RECORD</div><h1>Tra cứu điểm</h1><div class="sub">Xem kết quả học tập chi tiết theo từng học phần và học kỳ</div></div>
 
       <div class="stat-row lookup-summary">
-        <div class="stat-cell"><div class="stat-label">GPA tích lũy</div><div class="stat-value">3.42</div><div class="stat-delta up">Tốt</div></div>
-        <div class="stat-cell"><div class="stat-label">Tín chỉ đã tích lũy</div><div class="stat-value">96 / 130</div><div class="stat-delta">74% chương trình học</div></div>
+        <div class="stat-cell"><div class="stat-label">GPA tích lũy</div><div class="stat-value" id="lookupGpa">—</div><div class="stat-delta up">Từ dữ liệu điểm</div></div>
+        <div class="stat-cell"><div class="stat-label">Tín chỉ đã tích lũy</div><div class="stat-value" id="lookupCredits">—</div><div class="stat-delta" id="lookupCompletion">—</div></div>
         <div class="stat-cell"><div class="stat-label">Học phần đã công bố</div><div class="stat-value" id="publishedCount">—</div><div class="stat-delta">Trong tổng số học phần</div></div>
       </div>
 
@@ -83,19 +83,22 @@
 <script src="../js/app.js"></script>
 <script>
   const gradesBody = document.getElementById('gradesBody');
-  const renderGrades = () => {
+  const renderGrades = (grades) => {
     gradesBody.innerHTML = '';
-    MOCK.myGrades.forEach(grade => {
+    grades.forEach(grade => {
       const badge = grade.status === 'published' ? `<span class="badge success">${grade.letter}</span>` : '<span class="badge neutral">Chưa công bố</span>';
       const row = document.createElement('tr');
       row.dataset.semester = grade.semester;
       row.dataset.status = grade.status;
-      row.innerHTML = `<td class="id-cell">${grade.code}</td><td class="name-cell">${grade.name}</td><td class="num mono">${grade.credits}</td><td class="num mono">${grade.qt ?? '—'}</td><td class="num mono">${grade.gk ?? '—'}</td><td class="num mono">${grade.ck ?? '—'}</td><td class="num mono ${grade.status === 'published' ? 'published-score' : ''}">${grade.total ?? '—'}</td><td>${badge}</td><td class="mono">${grade.semester}</td>`;
+      row.innerHTML = `<td class="id-cell">${grade.code}</td><td class="name-cell">${grade.courseName}</td><td class="num mono">${grade.credits ?? '—'}</td><td class="num mono">${grade.attendance ?? '—'}</td><td class="num mono">${grade.midterm ?? '—'}</td><td class="num mono">${grade.final ?? '—'}</td><td class="num mono ${grade.status === 'published' ? 'published-score' : ''}">${grade.total ?? '—'}</td><td>${badge}</td><td class="mono">${grade.semester ?? '—'}</td>`;
       gradesBody.appendChild(row);
     });
   };
-  renderGrades();
-  document.getElementById('publishedCount').textContent = `${MOCK.myGrades.filter(grade => grade.status === 'published').length} / ${MOCK.myGrades.length}`;
+  apiGet('/students').then(students => { const student = students[0]; document.getElementById('lookupGpa').textContent = Number(student.gpa || 0).toFixed(2); document.getElementById('lookupCredits').textContent = `${student.credits} / 130`; document.getElementById('lookupCompletion').textContent = `${Math.round(Number(student.credits || 0) / 130 * 100)}% chương trình học`; return apiGet(`/grades?studentId=${student.id}`); }).then(grades => {
+    renderGrades(grades);
+    document.getElementById('publishedCount').textContent = `${grades.filter(grade => grade.status === 'published').length} / ${grades.length}`;
+    updateCount();
+  }).catch(error => showToast(error.message));
   const updateCount = () => { document.getElementById('resultCount').textContent = `${[...gradesBody.rows].filter(row => row.style.display !== 'none').length} học phần`; };
   initTableSearch(document.getElementById('gradeSearch'), gradesBody);
   document.getElementById('gradeSearch').addEventListener('input', updateCount);

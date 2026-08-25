@@ -1,7 +1,3 @@
-/* =========================================================
-   SHARED UI UTILITIES
-   ========================================================= */
-
 function showToast(message) {
   let toast = document.querySelector('.toast');
   if (!toast) {
@@ -52,3 +48,42 @@ function initTabs(tabsEl, panels) {
     });
   });
 }
+
+const API_BASE = '/api';
+
+async function apiRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) },
+    ...options,
+  });
+  if (response.status === 401 && !location.pathname.endsWith('login.html')) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    location.href = 'login.html';
+  }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Không thể kết nối máy chủ');
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+const apiGet = endpoint => apiRequest(endpoint);
+const apiSave = (endpoint, data, method = 'POST') => apiRequest(endpoint, { method, body: JSON.stringify(data) });
+
+document.querySelectorAll('.sidebar-logout').forEach(link => link.addEventListener('click', () => {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('currentUser');
+}));
+
+async function hydrateSystemReport() {
+  if (!location.pathname.endsWith('system-reports.html')) return;
+  const data = await apiGet('/dashboard');
+  const values = document.querySelectorAll('.stat-row .stat-value');
+  [data.stats.students, data.stats.lecturers, data.stats.courses, data.stats.unpublished].forEach((value, index) => {
+    if (values[index]) values[index].textContent = value;
+  });
+}
+
+hydrateSystemReport().catch(error => showToast(error.message));

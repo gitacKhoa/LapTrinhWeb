@@ -265,6 +265,7 @@
     </div>
   </div>
 
+  <script src="../js/app.js"></script>
   <script>
     const roleHint = document.getElementById('roleHint');
     let selectedRole = 'student';
@@ -276,10 +277,19 @@
       });
     });
 
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const dest = { student: 'student-dashboard.html', lecturer: 'lecturer-dashboard.html', admin: 'admin-dashboard.html' };
-      window.location.href = dest[selectedRole];
+      try {
+        const result = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ account: document.getElementById('account').value.trim(), password: document.getElementById('password').value, role: selectedRole }) });
+        if (!result.ok) { const error = await result.json().catch(() => ({})); throw new Error(error.message || 'Tài khoản, mật khẩu hoặc vai trò không đúng'); }
+        const payload = await result.json();
+        const roleByDatabase = { sinh_vien: 'student', giao_vien: 'lecturer', admin: 'admin' };
+        if (roleByDatabase[payload.user.vai_tro] !== selectedRole) throw new Error('Tài khoản không thuộc vai trò đã chọn');
+        localStorage.setItem('authToken', payload.token);
+        localStorage.setItem('currentUser', JSON.stringify(payload.user));
+        window.location.href = dest[selectedRole];
+      } catch (error) { showToast(error.message); }
     });
   </script>
 </body>

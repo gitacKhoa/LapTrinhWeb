@@ -53,9 +53,9 @@
         <div>
           <div class="eyebrow">ADMIN / STUDENT MANAGEMENT</div>
           <h1>Students</h1>
-          <div class="sub">4,286 sinh viên trong toàn hệ thống</div>
+          <div class="sub" id="studentTotalLabel">Đang tải dữ liệu...</div>
         </div>
-        <button class="btn btn-primary">+ Thêm sinh viên</button>
+        <button id="addStudent" class="btn btn-primary" type="button">+ Thêm sinh viên</button>
       </div>
 
       <div class="filter-bar">
@@ -89,7 +89,7 @@
             <thead>
               <tr>
                 <th>MSSV</th><th>Họ tên</th><th>Ngành</th><th>Khóa</th>
-                <th class="num">Tín chỉ</th><th class="num">GPA</th><th>Trạng thái</th>
+                <th class="num">Tín chỉ</th><th class="num">GPA</th><th>Trạng thái</th><th>Thao tác</th>
               </tr>
             </thead>
             <tbody id="studentsBody"></tbody>
@@ -104,7 +104,7 @@
 <script src="../js/app.js"></script>
 <script>
   const body = document.getElementById('studentsBody');
-  MOCK.students.forEach(s => {
+  apiGet('/students').then(students => { document.getElementById('studentTotalLabel').textContent = `${students.length} sinh viên trong toàn hệ thống`; return students; }).then(students => students.forEach(s => {
     const b = statusBadge(s.status);
     const tr = document.createElement('tr');
     tr.className = 'clickable';
@@ -118,15 +118,23 @@
       <td>${s.cohort}</td>
       <td class="num mono">${s.credits}</td>
       <td class="num mono">${s.gpa.toFixed(2)}</td>
-      <td><span class="badge ${b.cls}">${b.label}</span></td>`;
+      <td><span class="badge ${b.cls}">${b.label}</span></td>
+      <td><button class="btn btn-ghost btn-sm edit-student" type="button">Sửa</button><button class="btn btn-ghost btn-sm delete-student" type="button">Xóa</button></td>`;
     tr.addEventListener('click', () => window.location.href = `student-detail.html?id=${s.id}`);
+    tr.querySelector('.edit-student').addEventListener('click', async event => { event.stopPropagation(); const name = prompt('Họ tên mới', s.name); if (!name) return; try { await apiSave(`/students/${s.id}`, { name, email: s.email, major: s.major, cohort: s.cohort, status: s.status }, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
+    tr.querySelector('.delete-student').addEventListener('click', async event => { event.stopPropagation(); if (!confirm(`Xóa ${s.name}?`)) return; try { await apiRequest(`/students/${s.id}`, { method: 'DELETE' }); tr.remove(); } catch (error) { showToast(error.message); } });
     body.appendChild(tr);
-  });
+  })).catch(error => showToast(error.message));
 
   initTableSearch(document.getElementById('studentSearch'), body);
   initFilterSelect(document.getElementById('filterMajor'), body, 'major');
   initFilterSelect(document.getElementById('filterCohort'), body, 'cohort');
   initFilterSelect(document.getElementById('filterStatus'), body, 'status');
+  document.getElementById('addStudent').addEventListener('click', async () => {
+    const mssv = prompt('MSSV'); const name = prompt('Họ tên'); const email = prompt('Email');
+    if (!mssv || !name || !email) return;
+    try { await apiSave('/students', { mssv, name, email }); location.reload(); } catch (error) { showToast(error.message); }
+  });
 </script>
 </body>
 </html>

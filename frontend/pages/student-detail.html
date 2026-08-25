@@ -23,9 +23,9 @@
       <a href="students.html" class="active">Sinh viên</a>
       <a href="lecturers.html">Giảng viên</a>
       <a href="courses.html">Học phần</a>
-      <a href="#">Kỳ thi / Học kỳ</a>
-      <a href="#">Duyệt điểm</a>
-      <a href="#">Báo cáo hệ thống</a>
+      <a href="exams.html">Kỳ thi / Học kỳ</a>
+      <a href="grade-approval.html">Duyệt điểm</a>
+      <a href="system-reports.html">Báo cáo hệ thống</a>
     </nav>
     <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
   </aside>
@@ -70,8 +70,8 @@
 <script src="../js/app.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
-  const id = params.get('id') || MOCK.students[0].id;
-  const s = MOCK.students.find(x => x.id === id) || MOCK.students[0];
+  const id = params.get('id');
+  apiGet(`/students/${id}`).then(s => {
 
   document.getElementById('crumbId').textContent = s.id;
   document.getElementById('studentIdLabel').textContent = `STUDENT ID — ${s.id}`;
@@ -86,18 +86,19 @@
     <div class="stat-cell"><div class="stat-label">Tín chỉ còn thiếu</div><div class="stat-value">${remaining > 0 ? remaining : 0}</div></div>`;
 
   const body = document.getElementById('historyBody');
-  MOCK.myGrades.forEach(g => {
+  return apiGet(`/grades?studentId=${s.id}`).then(grades => grades.forEach(g => {
     const tr = document.createElement('tr');
     const published = g.status === 'published';
     tr.innerHTML = `
       <td class="id-cell">${g.code}</td>
-      <td class="name-cell">${g.name}</td>
-      <td class="num mono">${g.credits}</td>
+      <td class="name-cell">${g.courseName}</td>
+      <td class="num mono">${g.credits ?? '—'}</td>
       <td class="num mono">${published ? g.total : '—'}</td>
       <td>${published ? `<span class="badge success">${g.letter}</span>` : `<span class="badge neutral">Chưa công bố</span>`}</td>
       <td class="mono">${g.semester}</td>`;
     body.appendChild(tr);
-  });
+  }));
+  }).catch(error => showToast(error.message));
 </script>
 </body>
 </html>

@@ -66,18 +66,18 @@
       <div class="page-header">
         <div class="eyebrow">ACADEMIC RECORD / STUDENT ID — 22110234</div>
         <h1>Academic Record</h1>
-        <div class="sub">Nguyễn Văn An — CNTT — Khóa K19</div>
+        <div class="sub" id="studentMeta">Đang tải dữ liệu...</div>
       </div>
 
       <div class="hero-panel">
         <div class="hero-gpa">
-          <div class="big-num">3.42</div>
+          <div class="big-num" id="studentGpa">—</div>
           <div class="big-label">GPA tích lũy</div>
         </div>
         <div class="hero-stats">
-          <div class="h-item"><div class="h-value">96 / 130</div><div class="h-label">Tín chỉ</div></div>
-          <div class="h-item"><div class="h-value">74%</div><div class="h-label">Hoàn thành</div></div>
-          <div class="h-item"><div class="h-value">2026 — HK1</div><div class="h-label">Học kỳ hiện tại</div></div>
+          <div class="h-item"><div class="h-value" id="studentCredits">—</div><div class="h-label">Tín chỉ</div></div>
+          <div class="h-item"><div class="h-value" id="studentCompletion">—</div><div class="h-label">Hoàn thành</div></div>
+          <div class="h-item"><div class="h-value" id="currentSemester">—</div><div class="h-label">Học kỳ hiện tại</div></div>
         </div>
       </div>
 
@@ -127,31 +127,33 @@
 <script src="../js/app.js"></script>
 <script>
   const body = document.getElementById('gradesBody');
-  MOCK.myGrades.forEach(g => {
+  apiGet('/students').then(students => { const student = students[0]; document.getElementById('studentMeta').textContent = `${student.name} — ${student.major} — Khóa ${student.cohort}`; document.getElementById('studentGpa').textContent = Number(student.gpa || 0).toFixed(2); document.getElementById('studentCredits').textContent = `${student.credits} / 130`; document.getElementById('studentCompletion').textContent = `${Math.round(Number(student.credits || 0) / 130 * 100)}%`; return apiGet(`/grades?studentId=${student.id}`); }).then(grades => { grades.forEach(g => {
     const tr = document.createElement('tr');
     tr.dataset.semester = g.semester;
     const published = g.status === 'published';
     tr.innerHTML = `
       <td class="id-cell">${g.code}</td>
-      <td class="name-cell">${g.name}</td>
-      <td class="num mono">${g.credits}</td>
-      <td class="num mono">${g.qt ?? '—'}</td>
-      <td class="num mono">${g.gk ?? '—'}</td>
-      <td class="num mono">${g.ck ?? '—'}</td>
+      <td class="name-cell">${g.courseName}</td>
+      <td class="num mono">${g.credits ?? '—'}</td>
+      <td class="num mono">${g.attendance ?? '—'}</td>
+      <td class="num mono">${g.midterm ?? '—'}</td>
+      <td class="num mono">${g.final ?? '—'}</td>
       <td class="num mono" style="font-weight:700;">${published ? g.total : '—'}</td>
       <td>${published ? `<span class="badge success">${g.letter}</span>` : `<span class="badge neutral">Chưa công bố</span>`}</td>`;
     body.appendChild(tr);
-  });
+  }); document.getElementById('currentSemester').textContent = grades.find(grade => grade.semester)?.semester || '—'; }).catch(error => showToast(error.message));
   initTableSearch(document.getElementById('gradeSearch'), body);
   initFilterSelect(document.getElementById('filterSemester'), body, 'semester');
 
   const timelineList = document.getElementById('timelineList');
-  MOCK.timeline.forEach(t => {
+  apiGet('/grades').then(grades => grades.reduce((terms, grade) => { const term = grade.semester || 'Chưa phân kỳ'; (terms[term] ||= []).push(grade); return terms; }, {})).then(timeline => Object.entries(timeline).forEach(([term, grades]) => {
     const div = document.createElement('div');
     div.className = 'timeline-term';
-    div.innerHTML = `<div class="term-name">${t.term}</div><div class="term-stats">${t.credits} TC · GPA ${t.gpa.toFixed(2)}</div>`;
+    const total = grades.filter(grade => grade.total != null);
+    const gpa = total.length ? total.reduce((sum, grade) => sum + grade.total, 0) / total.length / 10 * 4 : 0;
+    div.innerHTML = `<div class="term-name">${term}</div><div class="term-stats">${grades.length} học phần · GPA ${gpa.toFixed(2)}</div>`;
     timelineList.appendChild(div);
-  });
+  })).catch(error => showToast(error.message));
 </script>
 </body>
 </html>

@@ -72,6 +72,9 @@ JWT_SECRET=thay_doi_chuoi_bi_mat_nay
 Cách 1 — dùng dòng lệnh (Git Bash):
 ```bash
 mysql -u root -p < schema.sql
+Nhấn nút Execute (⚡) để chạy.
+
+Schema mới tạo các bảng `users`, `courses` và `grades`. Nếu database đã tồn tại từ phiên bản cũ, hãy chạy lại toàn bộ `schema.sql` trên database trống để có đủ cột và bảng mới.
 ```
 
 Cách 2 — dùng MySQL Workbench:
@@ -86,6 +89,45 @@ npm run dev
 ```
 
 Mở trình duyệt vào `http://localhost:3000/pages/index.html` để kiểm tra.
+
+### 6. Tạo dữ liệu tài khoản và dữ liệu mẫu
+
+Sau khi chạy `schema.sql`, chạy thêm:
+
+```bash
+mysql -u root -p < seed.sql
+```
+
+Tài khoản mặc định:
+
+- Admin: `ADMIN001` / `admin123`
+- Giảng viên: `GV0001` đến `GV0025` / `gv123456`
+- Sinh viên: `SV000001` đến `SV000600` / `123456`
+
+## API chính
+
+### Kiến trúc backend
+
+- `backend/config/db.js`: MySQL connection pool, dùng `utf8mb4`.
+- `backend/models/`: truy vấn dữ liệu theo thực thể.
+- `backend/controllers/`: xử lý nghiệp vụ, hiện có `auth.controller.js`.
+- `backend/middleware/auth.middleware.js`: xác thực JWT và phân quyền.
+- `backend/routes/api.routes.js`: khai báo endpoint và kết nối controller/model.
+- `scripts/repair-vietnamese-data.js`: công cụ sửa dữ liệu bị lỗi mã hóa tiếng Việt nếu cần.
+
+Sau khi đăng nhập, token được lưu ở trình duyệt và tự gửi qua header `Authorization: Bearer ...`. Xóa token bằng nút Đăng xuất hoặc xóa dữ liệu website khi đổi tài khoản.
+
+- `GET /api/health`: kiểm tra server và kết nối MySQL.
+- `POST /api/auth/login`: đăng nhập bằng MSSV/email và mật khẩu.
+- `GET|POST /api/students`, `PUT|DELETE /api/students/:id`: quản lý sinh viên.
+- `GET|POST /api/courses`, `PUT|DELETE /api/courses/:id`: quản lý học phần.
+- `GET /api/lecturers`: danh sách giảng viên.
+- `GET /api/grades?studentId=...` hoặc `?courseId=...`: tra cứu điểm.
+- `POST /api/grades`: lưu/upsert điểm chuyên cần, giữa kỳ, cuối kỳ và trạng thái.
+
+Các endpoint đọc cũng yêu cầu JWT. Endpoint ghi dữ liệu sẽ trả `403` nếu vai trò không phù hợp; không dùng cách ẩn nút ở frontend làm cơ chế bảo mật.
+
+Frontend gọi các API này qua cùng origin `/api`, nên không cần mở frontend bằng file `file://`. Các nút thêm, sửa, xóa ở trang sinh viên/học phần và nút lưu nháp ở trang nhập điểm đều lưu trực tiếp vào MySQL.
 
 ## Quy trình làm việc nhóm (Git)
 

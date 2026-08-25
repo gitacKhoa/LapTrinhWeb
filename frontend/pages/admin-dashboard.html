@@ -64,23 +64,23 @@
       <div class="stat-row">
         <div class="stat-cell">
           <div class="stat-label">Tổng sinh viên</div>
-          <div class="stat-value">4,286</div>
-          <div class="stat-delta up">+ 312 nhập học mới</div>
+          <div class="stat-value" id="statStudents">—</div>
+          <div class="stat-delta up">Dữ liệu từ cơ sở dữ liệu</div>
         </div>
         <div class="stat-cell">
           <div class="stat-label">Tổng giảng viên</div>
-          <div class="stat-value">218</div>
-          <div class="stat-delta">Không đổi so với HK trước</div>
+          <div class="stat-value" id="statLecturers">—</div>
+          <div class="stat-delta">Tổng giảng viên hiện có</div>
         </div>
         <div class="stat-cell">
           <div class="stat-label">Học phần đang mở</div>
-          <div class="stat-value">96</div>
-          <div class="stat-delta up">+ 4 học phần mới</div>
+          <div class="stat-value" id="statCourses">—</div>
+          <div class="stat-delta up">Học phần đang mở</div>
         </div>
         <div class="stat-cell">
           <div class="stat-label">Điểm chưa công bố</div>
-          <div class="stat-value">18</div>
-          <div class="stat-delta down">Cần xử lý trước 30/08</div>
+          <div class="stat-value" id="statUnpublished">—</div>
+          <div class="stat-delta down">Điểm chưa công bố</div>
         </div>
       </div>
 
@@ -116,7 +116,7 @@
           <div class="panel">
             <div class="panel-header">
               <h2>Pending Actions</h2>
-              <a href="#" class="btn btn-ghost btn-sm">Xem tất cả</a>
+              <a href="grade-approval.html" class="btn btn-ghost btn-sm">Xem tất cả</a>
             </div>
             <div class="data-table-wrap">
               <table class="data-table" id="pendingTable">
@@ -143,7 +143,12 @@
 <script src="../js/app.js"></script>
 <script>
   const pendingBody = document.getElementById('pendingBody');
-  MOCK.pending.forEach(p => {
+  apiGet('/dashboard').then(data => {
+    document.getElementById('statStudents').textContent = data.stats.students;
+    document.getElementById('statLecturers').textContent = data.stats.lecturers;
+    document.getElementById('statCourses').textContent = data.stats.courses;
+    document.getElementById('statUnpublished').textContent = data.stats.unpublished;
+    data.pending.forEach(p => {
     const b = statusBadge(p.status);
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -152,15 +157,16 @@
       <td><span class="badge ${b.cls}">${b.label}</span></td>
       <td class="mono">${p.deadline}</td>`;
     pendingBody.appendChild(tr);
-  });
+    });
 
   const activityList = document.getElementById('activityList');
-  MOCK.activity.forEach(a => {
+  data.activity.forEach(a => {
     const div = document.createElement('div');
     div.className = 'timeline-item';
     div.innerHTML = `<div class="timeline-dot"></div><div><div class="text">${a.text}</div><div class="time">${a.time}</div></div>`;
     activityList.appendChild(div);
-  });
+    });
+  }).catch(error => showToast(error.message));
 </script>
 </body>
 </html>

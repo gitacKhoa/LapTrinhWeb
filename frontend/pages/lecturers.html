@@ -48,14 +48,14 @@
           <h1>Lecturers</h1>
           <div class="sub">218 giảng viên trong toàn hệ thống</div>
         </div>
-        <button class="btn btn-primary">+ Thêm giảng viên</button>
+        <button id="addLecturer" class="btn btn-primary" type="button">+ Thêm giảng viên</button>
       </div>
 
       <div class="panel">
         <div class="data-table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>Mã GV</th><th>Họ tên</th><th>Khoa</th><th class="num">Học phần</th><th class="num">Sinh viên</th><th>Trạng thái</th></tr>
+              <tr><th>Mã GV</th><th>Họ tên</th><th>Khoa</th><th class="num">Học phần</th><th class="num">Sinh viên</th><th>Trạng thái</th><th>Thao tác</th></tr>
             </thead>
             <tbody id="lecturersBody"></tbody>
           </table>
@@ -69,7 +69,7 @@
 <script src="../js/app.js"></script>
 <script>
   const body = document.getElementById('lecturersBody');
-  MOCK.lecturers.forEach(l => {
+  apiGet('/lecturers').then(lecturers => lecturers.forEach(l => {
     const b = statusBadge(l.status);
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -78,9 +78,12 @@
       <td>${l.dept}</td>
       <td class="num mono">${l.courses}</td>
       <td class="num mono">${l.students}</td>
-      <td><span class="badge ${b.cls}">${b.label}</span></td>`;
+      <td><span class="badge ${b.cls}">${b.label}</span></td><td><button class="btn btn-ghost btn-sm edit-lecturer" type="button">Sửa</button><button class="btn btn-ghost btn-sm delete-lecturer" type="button">Xóa</button></td>`;
+    tr.querySelector('.edit-lecturer').addEventListener('click', async () => { const name = prompt('Họ tên mới', l.name); if (!name) return; try { await apiSave(`/lecturers/${l.id}`, { name, email: l.email, dept: l.dept, status: l.status }, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
+    tr.querySelector('.delete-lecturer').addEventListener('click', async () => { if (!confirm(`Xóa ${l.name}?`)) return; try { await apiRequest(`/lecturers/${l.id}`, { method: 'DELETE' }); tr.remove(); } catch (error) { showToast(error.message); } });
     body.appendChild(tr);
-  });
+  })).catch(error => showToast(error.message));
+  document.getElementById('addLecturer').addEventListener('click', async () => { const lecturerId = prompt('Mã giảng viên'); const name = prompt('Họ tên'); const email = prompt('Email'); if (!lecturerId || !name || !email) return; try { await apiSave('/lecturers', { lecturerId, name, email }); location.reload(); } catch (error) { showToast(error.message); } });
 </script>
 </body>
 </html>

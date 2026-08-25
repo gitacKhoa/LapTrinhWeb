@@ -123,11 +123,13 @@
 
 <script src="../js/app.js"></script>
 <script>
-  document.getElementById('profileForm').addEventListener('submit', event => {
+  let profileId;
+  apiGet('/students').then(students => apiGet(`/students/${students[0].id}`)).then(student => { profileId = student.id; document.querySelector('.identity-name').textContent = student.name; document.querySelector('.identity-id').textContent = `MSSV ${student.studentId}`; document.getElementById('fullName').value = student.name; document.getElementById('studentId').value = student.studentId; document.getElementById('email').value = student.email; document.getElementById('phone').value = student.phone || ''; document.getElementById('address').value = student.address || ''; });
+  document.getElementById('profileForm').addEventListener('submit', async event => {
     event.preventDefault();
-    showToast('Đã lưu thông tin hồ sơ');
+    try { await apiSave(`/students/${profileId}`, { name: document.getElementById('fullName').value, email: document.getElementById('email').value, phone: document.getElementById('phone').value, address: document.getElementById('address').value }, 'PUT'); showToast('Đã lưu thông tin hồ sơ'); } catch (error) { showToast(error.message); }
   });
-  document.getElementById('changePassword').addEventListener('click', () => showToast('Tính năng đổi mật khẩu đang được mở rộng'));
+  document.getElementById('changePassword').addEventListener('click', async () => { const currentPassword = prompt('Mật khẩu hiện tại'); const newPassword = prompt('Mật khẩu mới'); if (!currentPassword || !newPassword) return; try { await apiSave(`/users/${profileId}/password`, { currentPassword, newPassword }, 'PATCH'); showToast('Đã đổi mật khẩu'); } catch (error) { showToast(error.message); } });
 </script>
 </body>
 </html>

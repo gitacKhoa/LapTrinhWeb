@@ -47,9 +47,9 @@
         <div>
           <div class="eyebrow">ADMIN / COURSE MANAGEMENT</div>
           <h1>Courses</h1>
-          <div class="sub">96 học phần đang mở trong Học kỳ 1, 2026–2027</div>
+          <div class="sub" id="courseTotalLabel">Đang tải dữ liệu...</div>
         </div>
-        <button class="btn btn-primary">+ Thêm học phần</button>
+        <button id="addCourse" class="btn btn-primary" type="button">+ Thêm học phần</button>
       </div>
 
       <div class="filter-bar">
@@ -87,7 +87,7 @@
 <script src="../js/app.js"></script>
 <script>
   const body = document.getElementById('coursesBody');
-  MOCK.courses.forEach(c => {
+  apiGet('/courses').then(courses => { document.getElementById('courseTotalLabel').textContent = `${courses.length} học phần trong hệ thống`; return courses; }).then(courses => courses.forEach(c => {
     const b = statusBadge(c.status);
     const tr = document.createElement('tr');
     tr.dataset.status = c.status;
@@ -99,11 +99,17 @@
       <td>${c.lecturer}</td>
       <td class="num mono">${c.students}</td>
       <td><span class="badge ${b.cls}">${b.label}</span></td>
-      <td><a href="#" class="btn btn-ghost btn-sm">Xem kết quả</a></td>`;
+      <td><a href="#" class="btn btn-ghost btn-sm">Xem kết quả</a> <button class="btn btn-ghost btn-sm delete-course" type="button">Xóa</button></td>`;
+    tr.querySelector('.delete-course').addEventListener('click', async event => { event.stopPropagation(); if (!confirm(`Xóa ${c.name}?`)) return; try { await apiRequest(`/courses/${c.id}`, { method: 'DELETE' }); tr.remove(); } catch (error) { showToast(error.message); } });
     body.appendChild(tr);
-  });
+  })).catch(error => showToast(error.message));
   initTableSearch(document.getElementById('courseSearch'), body);
   initFilterSelect(document.getElementById('filterStatus'), body, 'status');
+  document.getElementById('addCourse').addEventListener('click', async () => {
+    const code = prompt('Mã học phần'); const name = prompt('Tên học phần');
+    if (!code || !name) return;
+    try { await apiSave('/courses', { code, name }); location.reload(); } catch (error) { showToast(error.message); }
+  });
 </script>
 </body>
 </html>

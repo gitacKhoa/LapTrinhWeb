@@ -21,8 +21,8 @@
     <nav class="sidebar-nav">
       <a href="lecturer-dashboard.html" class="active">Tổng quan giảng dạy</a>
       <a href="grade-entry.html">Nhập điểm</a>
-      <a href="#">Học phần của tôi</a>
-      <a href="#">Thống kê lớp học</a>
+      <a href="my-courses.html">Học phần của tôi</a>
+      <a href="class-statistics.html">Thống kê lớp học</a>
     </nav>
     <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
   </aside>
@@ -53,7 +53,7 @@
             <thead>
               <tr><th>Học phần</th><th>Lớp</th><th class="num">Sinh viên</th><th>Tiến độ</th><th>Trạng thái</th><th></th></tr>
             </thead>
-            <tbody>
+            <tbody id="teachingBody">
               <tr>
                 <td class="name-cell">IT4409 — Lập trình Web</td>
                 <td class="mono">D23CQCN01</td>
@@ -82,7 +82,7 @@
                   </div>
                 </td>
                 <td><span class="badge success">Đã công bố</span></td>
-                <td><a href="#" class="btn btn-secondary btn-sm">Xem thống kê</a></td>
+                <td><a href="class-statistics.html?course=IT3103" class="btn btn-secondary btn-sm">Xem thống kê</a></td>
               </tr>
             </tbody>
           </table>
@@ -117,4 +117,9 @@
   </div>
 </div>
 </body>
+<script src="../js/data.js"></script><script src="../js/app.js"></script><script>
+  const teachingBody = document.getElementById('teachingBody');
+  teachingBody.innerHTML = '';
+  apiGet('/courses').then(courses => courses.forEach(course => { const progress = course.status === 'published' ? 100 : 0; const badge = statusBadge(course.status); const row = document.createElement('tr'); row.innerHTML = `<td class="name-cell">${course.code} — ${course.name}</td><td class="mono">—</td><td class="num mono">${course.students}</td><td>${progress}%</td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a href="${progress ? `class-statistics.html?course=${course.id}` : `grade-entry.html?course=${course.id}`}" class="btn btn-primary btn-sm">${progress ? 'Xem thống kê' : 'Nhập điểm'}</a></td>`; teachingBody.appendChild(row); })).catch(error => showToast(error.message));
+</script>
 </html>
