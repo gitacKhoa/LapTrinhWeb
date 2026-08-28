@@ -121,7 +121,7 @@
       <td><span class="badge ${b.cls}">${b.label}</span></td>
       <td><button class="btn btn-ghost btn-sm edit-student" type="button">Sửa</button><button class="btn btn-ghost btn-sm delete-student" type="button">Xóa</button></td>`;
     tr.addEventListener('click', () => window.location.href = `student-detail.html?id=${s.id}`);
-    tr.querySelector('.edit-student').addEventListener('click', async event => { event.stopPropagation(); const name = prompt('Họ tên mới', s.name); if (!name) return; try { await apiSave(`/students/${s.id}`, { name, email: s.email, major: s.major, cohort: s.cohort, status: s.status }, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
+    tr.querySelector('.edit-student').addEventListener('click', async event => { event.stopPropagation(); const data = await openDataForm('Sửa thông tin sinh viên', [{ name: 'name', label: 'Họ và tên', value: s.name }, { name: 'email', label: 'Email', type: 'email', value: s.email }, { name: 'major', label: 'Ngành', value: s.major }, { name: 'cohort', label: 'Khóa', value: s.cohort }, { name: 'phone', label: 'Số điện thoại', value: s.phone, required: false }, { name: 'address', label: 'Địa chỉ', value: s.address, required: false }, { name: 'status', label: 'Trạng thái', value: s.status }]); if (!data) return; try { await apiSave(`/students/${s.id}`, data, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
     tr.querySelector('.delete-student').addEventListener('click', async event => { event.stopPropagation(); if (!confirm(`Xóa ${s.name}?`)) return; try { await apiRequest(`/students/${s.id}`, { method: 'DELETE' }); tr.remove(); } catch (error) { showToast(error.message); } });
     body.appendChild(tr);
   })).catch(error => showToast(error.message));
@@ -130,11 +130,7 @@
   initFilterSelect(document.getElementById('filterMajor'), body, 'major');
   initFilterSelect(document.getElementById('filterCohort'), body, 'cohort');
   initFilterSelect(document.getElementById('filterStatus'), body, 'status');
-  document.getElementById('addStudent').addEventListener('click', async () => {
-    const mssv = prompt('MSSV'); const name = prompt('Họ tên'); const email = prompt('Email');
-    if (!mssv || !name || !email) return;
-    try { await apiSave('/students', { mssv, name, email }); location.reload(); } catch (error) { showToast(error.message); }
-  });
+  document.getElementById('addStudent').addEventListener('click', async () => { const data = await openDataForm('Thêm sinh viên', [{ name: 'mssv', label: 'Mã sinh viên' }, { name: 'name', label: 'Họ và tên' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'password', label: 'Mật khẩu', type: 'password', placeholder: 'Mặc định: 123456', required: false }, { name: 'major', label: 'Ngành' }, { name: 'cohort', label: 'Khóa' }, { name: 'phone', label: 'Số điện thoại', required: false }, { name: 'address', label: 'Địa chỉ', required: false }, { name: 'status', label: 'Trạng thái', value: 'active' }]); if (!data) return; try { await apiSave('/students', data); location.reload(); } catch (error) { showToast(error.message); } });
 </script>
 </body>
 </html>

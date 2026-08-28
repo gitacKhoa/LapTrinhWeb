@@ -1,9 +1,12 @@
 const express = require('express');
+const multer = require('multer');
+const XLSX = require('xlsx');
 const pool = require('../config/db');
 const authController = require('../controllers/auth.controller');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
@@ -18,6 +21,57 @@ function validateScore(value, field) {
     throw error;
   }
   return score;
+}
+
+async function assertCourseAccess(req, courseId) {
+  const [courses] = await pool.query('SELECT id, giang_vien_id FROM courses WHERE id=?', [courseId]);
+  if (!courses.length) {
+    const error = new Error('Không tìm thấy học phần');
+    error.status = 404;
+    throw error;
+  }
+  if (req.auth.role === 'giao_vien' && String(courses[0].giang_vien_id) !== String(req.auth.id)) {
+    const error = new Error('Bạn chỉ được nhập điểm cho học phần mình phụ trách');
+    error.status = 403;
+    throw error;
+  }
+  return courses[0];
+}
+
+function normalizeGradeInput(input, rowNumber) {
+  const studentId = input.studentId ?? input.sinh_vien_id;
+  const courseId = input.courseId ?? input.mon_hoc_id;
+  if (!studentId || !courseId) {
+    const error = new Error(`Dòng ${rowNumber}: thiếu studentId hoặc courseId`);
+    error.status = 400;
+    throw error;
+  }
+  const scores = [
+    validateScore(input.attendance ?? input.diem_chuyen_can, `Dòng ${rowNumber} - Điểm chuyên cần`),
+    validateScore(input.midterm ?? input.diem_giua_ky, `Dòng ${rowNumber} - Điểm giữa kỳ`),
+    validateScore(input.final ?? input.diem_cuoi_ky, `Dòng ${rowNumber} - Điểm cuối kỳ`),
+  ];
+  const total = scores.every(score => score !== null) ? Number((scores[0] * .1 + scores[1] * .3 + scores[2] * .6).toFixed(2)) : null;
+  return { studentId, courseId, scores, total, note: input.note ?? input.ghi_chu ?? '', status: input.status || 'draft' };
+}
+
+async function assertStudentInCourse(studentId, courseId) {
+  const [students] = await pool.query(`SELECT g.sinh_vien_id FROM grades g
+    JOIN users u ON u.id=g.sinh_vien_id
+    WHERE (g.sinh_vien_id=? OR u.mssv=?) AND g.mon_hoc_id=? AND u.vai_tro='sinh_vien'`, [studentId, studentId, courseId]);
+  if (!students.length) {
+    const error = new Error('Sinh viên không thuộc danh sách của học phần');
+    error.status = 400;
+    throw error;
+  }
+  return students[0].sinh_vien_id;
+}
+
+async function upsertGrade(connection, grade) {
+  const [result] = await connection.query(`INSERT INTO grades (sinh_vien_id,mon_hoc_id,diem_chuyen_can,diem_giua_ky,diem_cuoi_ky,diem_tong_ket,ghi_chu,trang_thai)
+    VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE diem_chuyen_can=VALUES(diem_chuyen_can),diem_giua_ky=VALUES(diem_giua_ky),diem_cuoi_ky=VALUES(diem_cuoi_ky),diem_tong_ket=VALUES(diem_tong_ket),ghi_chu=VALUES(ghi_chu),trang_thai=VALUES(trang_thai)`,
+    [grade.studentId, grade.courseId, ...grade.scores, grade.total, grade.note, grade.status]);
+  return { id: result.insertId, total: grade.total };
 }
 
 router.get('/health', asyncRoute(async (req, res) => {
@@ -56,7 +110,7 @@ router.patch('/users/:id/password', authorize('admin', 'giao_vien', 'sinh_vien')
 
 router.get('/students', asyncRoute(async (req, res) => {
   const [rows] = await pool.query(`SELECT u.id, u.mssv AS studentId, u.ho_ten AS name, u.email,
-    u.nganh AS major, u.khoa_hoc AS cohort, COALESCE(SUM(c.tin_chi), 0) AS credits,
+    u.nganh AS major, u.khoa_hoc AS cohort, u.so_dien_thoai AS phone, u.dia_chi AS address, COALESCE(SUM(c.tin_chi), 0) AS credits,
     ROUND(COALESCE(AVG(g.diem_tong_ket), 0) / 10 * 4, 2) AS gpa, u.trang_thai AS status
     FROM users u LEFT JOIN grades g ON g.sinh_vien_id = u.id LEFT JOIN courses c ON c.id = g.mon_hoc_id
     WHERE u.vai_tro = 'sinh_vien' GROUP BY u.id ORDER BY u.id DESC`);
@@ -64,11 +118,11 @@ router.get('/students', asyncRoute(async (req, res) => {
 }));
 
 router.post('/students', authorize('admin'), asyncRoute(async (req, res) => {
-  const { mssv, name, email, password = '123456', major = '', cohort = '', status = 'active' } = req.body;
+  const { mssv, name, email, password = '123456', major = '', cohort = '', phone = '', address = '', status = 'active' } = req.body;
   if (!mssv || !name || !email) return res.status(400).json({ message: 'MSSV, họ tên và email là bắt buộc' });
   const [result] = await pool.query(`INSERT INTO users
-    (ho_ten, mssv, email, mat_khau, vai_tro, nganh, khoa_hoc, trang_thai)
-    VALUES (?, ?, ?, ?, 'sinh_vien', ?, ?, ?)`, [name, mssv, email, password, major, cohort, status]);
+    (ho_ten, mssv, email, mat_khau, vai_tro, nganh, khoa_hoc, so_dien_thoai, dia_chi, trang_thai)
+    VALUES (?, ?, ?, ?, 'sinh_vien', ?, ?, ?, ?, ?)`, [name, mssv, email, password, major, cohort, phone, address, status]);
   res.status(201).json({ id: result.insertId });
 }));
 
@@ -118,10 +172,12 @@ router.delete('/lecturers/:id', authorize('admin'), asyncRoute(async (req, res) 
 }));
 
 router.get('/courses', asyncRoute(async (req, res) => {
+  const courseFilter = req.auth.role === 'giao_vien' ? 'WHERE c.giang_vien_id=?' : '';
+  const courseParams = req.auth.role === 'giao_vien' ? [req.auth.id] : [];
   const [rows] = await pool.query(`SELECT c.id, c.ma_mon AS code, c.ten_mon AS name, c.tin_chi AS credits,
     c.khoa AS dept, c.hoc_ky AS semester, c.trang_thai AS status, u.ho_ten AS lecturer,
     COUNT(g.id) AS students FROM courses c LEFT JOIN users u ON u.id=c.giang_vien_id
-    LEFT JOIN grades g ON g.mon_hoc_id=c.id GROUP BY c.id ORDER BY c.id DESC`);
+    LEFT JOIN grades g ON g.mon_hoc_id=c.id ${courseFilter} GROUP BY c.id ORDER BY c.id DESC`, courseParams);
   res.json(rows);
 }));
 
@@ -147,9 +203,11 @@ router.delete('/courses/:id', authorize('admin'), asyncRoute(async (req, res) =>
 
 router.get('/grades', asyncRoute(async (req, res) => {
   const params = [];
-  let where = '';
-  if (req.query.courseId) { where = 'WHERE g.mon_hoc_id=?'; params.push(req.query.courseId); }
-  if (req.query.studentId) { where = 'WHERE g.sinh_vien_id=?'; params.push(req.query.studentId); }
+  const conditions = [];
+  if (req.query.courseId) { conditions.push('g.mon_hoc_id=?'); params.push(req.query.courseId); }
+  if (req.query.studentId) { conditions.push('g.sinh_vien_id=?'); params.push(req.query.studentId); }
+  if (req.auth.role === 'giao_vien') { conditions.push('c.giang_vien_id=?'); params.push(req.auth.id); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const [rows] = await pool.query(`SELECT g.id, g.sinh_vien_id AS studentId, u.mssv, u.ho_ten AS name,
     g.mon_hoc_id AS courseId, c.ma_mon AS code, c.ten_mon AS courseName, g.diem_chuyen_can AS attendance,
     g.diem_giua_ky AS midterm, g.diem_cuoi_ky AS final, g.diem_tong_ket AS total, g.ghi_chu AS note,
@@ -188,9 +246,11 @@ router.get('/approvals', asyncRoute(async (req, res) => {
   res.json(rows);
 }));
 
-router.patch('/approvals/:courseId', authorize('admin'), asyncRoute(async (req, res) => {
+router.patch('/approvals/:courseId', authorize('admin', 'giao_vien'), asyncRoute(async (req, res) => {
   const { status } = req.body;
   if (!['review', 'submitted', 'published', 'draft'].includes(status)) return res.status(400).json({ message: 'Trạng thái không hợp lệ' });
+  await assertCourseAccess(req, req.params.courseId);
+  if (req.auth.role === 'giao_vien' && !['submitted', 'draft'].includes(status)) return res.status(403).json({ message: 'Giảng viên chỉ được gửi hoặc đưa bảng điểm về nháp' });
   await pool.query('UPDATE courses SET trang_thai=? WHERE id=?', [status, req.params.courseId]);
   await pool.query('UPDATE grades SET trang_thai=? WHERE mon_hoc_id=?', [status, req.params.courseId]);
   res.json({ message: 'Đã cập nhật trạng thái duyệt điểm' });
@@ -203,14 +263,61 @@ router.post('/terms', authorize('admin'), asyncRoute(async (req, res) => {
 }));
 
 router.post('/grades', authorize('admin', 'giao_vien'), asyncRoute(async (req, res) => {
-  const { studentId, courseId, attendance, midterm, final, note='', status='draft' } = req.body;
-  if (!studentId || !courseId) return res.status(400).json({ message: 'Sinh viên và học phần là bắt buộc' });
-  const scores = [validateScore(attendance, 'Điểm chuyên cần'), validateScore(midterm, 'Điểm giữa kỳ'), validateScore(final, 'Điểm cuối kỳ')];
-  const total = scores.every(score => score !== null) ? Number((scores[0]*.1 + scores[1]*.3 + scores[2]*.6).toFixed(2)) : null;
-  const [result] = await pool.query(`INSERT INTO grades (sinh_vien_id,mon_hoc_id,diem_chuyen_can,diem_giua_ky,diem_cuoi_ky,diem_tong_ket,ghi_chu,trang_thai)
-    VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE diem_chuyen_can=VALUES(diem_chuyen_can),diem_giua_ky=VALUES(diem_giua_ky),diem_cuoi_ky=VALUES(diem_cuoi_ky),diem_tong_ket=VALUES(diem_tong_ket),ghi_chu=VALUES(ghi_chu),trang_thai=VALUES(trang_thai)`,
-    [studentId, courseId, ...scores, total, note, status]);
-  res.status(201).json({ id: result.insertId, total });
+  const grade = normalizeGradeInput(req.body, 1);
+  await assertCourseAccess(req, grade.courseId);
+  grade.studentId = await assertStudentInCourse(grade.studentId, grade.courseId);
+  res.status(201).json(await upsertGrade(pool, grade));
+}));
+
+router.post('/grades/bulk', authorize('admin', 'giao_vien'), asyncRoute(async (req, res) => {
+  if (!Array.isArray(req.body.grades) || !req.body.grades.length) return res.status(400).json({ message: 'Danh sách điểm không được để trống' });
+  const grades = req.body.grades.map((input, index) => normalizeGradeInput(input, index + 1));
+  const courseIds = [...new Set(grades.map(grade => String(grade.courseId)))];
+  for (const courseId of courseIds) await assertCourseAccess(req, courseId);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const grade of grades) {
+      grade.studentId = await assertStudentInCourse(grade.studentId, grade.courseId);
+      await upsertGrade(connection, grade);
+    }
+    await connection.commit();
+    res.status(201).json({ saved: grades.length });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}));
+
+router.post('/grades/import', authorize('admin', 'giao_vien'), upload.single('file'), asyncRoute(async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'Vui lòng chọn file Excel' });
+  let rows;
+  try {
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
+  } catch (error) {
+    return res.status(400).json({ message: 'File Excel không hợp lệ' });
+  }
+  if (!rows.length) return res.status(400).json({ message: 'File Excel không có dữ liệu' });
+  const courseId = req.body.courseId;
+  const grades = rows.map((row, index) => normalizeGradeInput({
+    studentId: row.studentId || row.StudentId || row.MSSV || row.mssv,
+    courseId: row.courseId || row.CourseId || courseId,
+    attendance: row.attendance ?? row.Attendance ?? row['Chuyên cần'],
+    midterm: row.midterm ?? row.Midterm ?? row['Giữa kỳ'],
+    final: row.final ?? row.Final ?? row['Cuối kỳ'],
+    note: row.note ?? row.Note ?? row['Ghi chú'],
+    status: req.body.status || 'draft',
+  }, index + 2));
+  const result = await (async () => {
+    const response = await fetch(`${req.protocol}://${req.get('host')}/api/grades/bulk`, { method: 'POST', headers: { authorization: req.get('authorization'), 'content-type': 'application/json' }, body: JSON.stringify({ grades }) });
+    const body = await response.json();
+    if (!response.ok) { const error = new Error(body.message); error.status = response.status; throw error; }
+    return body;
+  })();
+  res.status(201).json({ ...result, rows: rows.length });
 }));
 
 router.use((error, req, res, next) => {

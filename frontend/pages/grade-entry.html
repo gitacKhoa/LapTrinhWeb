@@ -77,6 +77,16 @@
         </div>
       </div>
 
+      <div class="panel" style="margin-bottom:18px;">
+        <div class="panel-body" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <strong>Nhập từ Excel</strong>
+          <input id="excelFile" type="file" accept=".xlsx,.xls,.csv">
+          <button class="btn btn-secondary btn-sm" id="importExcelBtn" type="button">Tải lên và lưu nháp</button>
+          <button class="btn btn-ghost btn-sm" id="templateBtn" type="button">Tải file mẫu</button>
+        </div>
+        <div class="panel-body" style="padding-top:0; color:var(--neutral); font-size:12px;">Cột bắt buộc: MSSV, Chuyên cần, Giữa kỳ, Cuối kỳ. Có thể thêm Ghi chú.</div>
+      </div>
+
       <div class="class-meta">
         <div><div class="m-label">Class</div><div class="m-value">D23CQCN01</div></div>
         <div><div class="m-label">Semester</div><div class="m-value">2026 — Học kỳ 1</div></div>
@@ -208,14 +218,37 @@
 
   document.getElementById('saveDraftBtn').addEventListener('click', async () => {
     try {
-      for (const row of state) await apiSave('/grades', { studentId: row.studentId, courseId: row.courseId || 1, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'draft' });
+      await apiSave('/grades/bulk', { grades: state.map(row => ({ studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'draft' })) });
       showToast('Đã lưu nháp bảng điểm.');
     } catch (error) { showToast(error.message); }
   });
   document.getElementById('submitBtn').addEventListener('click', async () => {
     const hasInvalid = entryBody.querySelector('.grade-input.invalid');
     if (hasInvalid) { showToast('Còn ô điểm không hợp lệ — vui lòng kiểm tra lại trước khi gửi.'); return; }
-    try { for (const row of state) await apiSave('/grades', { studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'submitted' }); await apiRequest(`/approvals/${courseId}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) }); showToast('Đã gửi bảng điểm để duyệt.'); } catch (error) { showToast(error.message); }
+    try { await apiSave('/grades/bulk', { grades: state.map(row => ({ studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'submitted' })) }); await apiRequest(`/approvals/${courseId}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) }); showToast('Đã gửi bảng điểm để duyệt.'); } catch (error) { showToast(error.message); }
+  });
+  document.getElementById('importExcelBtn').addEventListener('click', async () => {
+    const file = document.getElementById('excelFile').files[0];
+    if (!file) { showToast('Vui lòng chọn file Excel.'); return; }
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('courseId', courseId);
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('/api/grades/import', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body: formData });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Không thể nhập file Excel');
+      showToast(`Đã nhập ${result.saved} dòng vào bản nháp.`);
+      location.reload();
+    } catch (error) { showToast(error.message); }
+  });
+  document.getElementById('templateBtn').addEventListener('click', () => {
+    const csv = '\ufeffMSSV,Chuyên cần,Giữa kỳ,Cuối kỳ,Ghi chú\nSV000001,8,7.5,9,\n';
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    link.download = 'mau-nhap-diem.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
   });
   document.getElementById('undoBtn').addEventListener('click', () => { renderAll(); showToast('Đã hoàn tác thay đổi.'); });
 

@@ -72,6 +72,18 @@ async function apiRequest(endpoint, options = {}) {
 const apiGet = endpoint => apiRequest(endpoint);
 const apiSave = (endpoint, data, method = 'POST') => apiRequest(endpoint, { method, body: JSON.stringify(data) });
 
+function openDataForm(title, fields) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'data-form-overlay';
+    overlay.innerHTML = `<form class="data-form panel"><div class="panel-header"><h2>${title}</h2><button type="button" class="btn btn-ghost close-form">Đóng</button></div><div class="data-form-fields">${fields.map(field => `<label class="field"><span>${field.label}</span><input name="${field.name}" type="${field.type || 'text'}" value="${field.value ?? ''}" ${field.required === false ? '' : 'required'} ${field.placeholder ? `placeholder="${field.placeholder}"` : ''}></label>`).join('')}</div><div class="panel-actions"><button type="button" class="btn btn-secondary close-form">Hủy</button><button class="btn btn-primary" type="submit">Lưu dữ liệu</button></div></form>`;
+    document.body.appendChild(overlay);
+    const close = () => { overlay.remove(); resolve(null); };
+    overlay.querySelectorAll('.close-form').forEach(button => button.addEventListener('click', close));
+    overlay.querySelector('form').addEventListener('submit', event => { event.preventDefault(); const data = Object.fromEntries(new FormData(event.currentTarget)); overlay.remove(); resolve(data); });
+  });
+}
+
 document.querySelectorAll('.sidebar-logout').forEach(link => link.addEventListener('click', () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('currentUser');

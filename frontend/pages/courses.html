@@ -105,11 +105,7 @@
   })).catch(error => showToast(error.message));
   initTableSearch(document.getElementById('courseSearch'), body);
   initFilterSelect(document.getElementById('filterStatus'), body, 'status');
-  document.getElementById('addCourse').addEventListener('click', async () => {
-    const code = prompt('Mã học phần'); const name = prompt('Tên học phần');
-    if (!code || !name) return;
-    try { await apiSave('/courses', { code, name }); location.reload(); } catch (error) { showToast(error.message); }
-  });
+  document.getElementById('addCourse').addEventListener('click', async () => { const data = await openDataForm('Thêm học phần', [{ name: 'code', label: 'Mã học phần' }, { name: 'name', label: 'Tên học phần' }, { name: 'credits', label: 'Số tín chỉ', type: 'number', value: 3 }, { name: 'dept', label: 'Khoa', required: false }, { name: 'semester', label: 'Học kỳ', required: false }, { name: 'lecturerId', label: 'ID giảng viên', required: false }, { name: 'status', label: 'Trạng thái', value: 'draft' }]); if (!data) return; try { await apiSave('/courses', data); location.reload(); } catch (error) { showToast(error.message); } });
 </script>
 </body>
 </html>

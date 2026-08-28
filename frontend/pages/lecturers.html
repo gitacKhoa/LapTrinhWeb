@@ -79,11 +79,11 @@
       <td class="num mono">${l.courses}</td>
       <td class="num mono">${l.students}</td>
       <td><span class="badge ${b.cls}">${b.label}</span></td><td><button class="btn btn-ghost btn-sm edit-lecturer" type="button">Sửa</button><button class="btn btn-ghost btn-sm delete-lecturer" type="button">Xóa</button></td>`;
-    tr.querySelector('.edit-lecturer').addEventListener('click', async () => { const name = prompt('Họ tên mới', l.name); if (!name) return; try { await apiSave(`/lecturers/${l.id}`, { name, email: l.email, dept: l.dept, status: l.status }, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
+    tr.querySelector('.edit-lecturer').addEventListener('click', async () => { const data = await openDataForm('Sửa thông tin giảng viên', [{ name: 'name', label: 'Họ và tên', value: l.name }, { name: 'email', label: 'Email', type: 'email', value: l.email }, { name: 'dept', label: 'Khoa', value: l.dept }, { name: 'status', label: 'Trạng thái', value: l.status }]); if (!data) return; try { await apiSave(`/lecturers/${l.id}`, data, 'PUT'); location.reload(); } catch (error) { showToast(error.message); } });
     tr.querySelector('.delete-lecturer').addEventListener('click', async () => { if (!confirm(`Xóa ${l.name}?`)) return; try { await apiRequest(`/lecturers/${l.id}`, { method: 'DELETE' }); tr.remove(); } catch (error) { showToast(error.message); } });
     body.appendChild(tr);
   })).catch(error => showToast(error.message));
-  document.getElementById('addLecturer').addEventListener('click', async () => { const lecturerId = prompt('Mã giảng viên'); const name = prompt('Họ tên'); const email = prompt('Email'); if (!lecturerId || !name || !email) return; try { await apiSave('/lecturers', { lecturerId, name, email }); location.reload(); } catch (error) { showToast(error.message); } });
+  document.getElementById('addLecturer').addEventListener('click', async () => { const data = await openDataForm('Thêm giảng viên', [{ name: 'lecturerId', label: 'Mã giảng viên' }, { name: 'name', label: 'Họ và tên' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'password', label: 'Mật khẩu', type: 'password', placeholder: 'Mặc định: gv123456', required: false }, { name: 'dept', label: 'Khoa' }, { name: 'status', label: 'Trạng thái', value: 'active' }]); if (!data) return; try { await apiSave('/lecturers', data); location.reload(); } catch (error) { showToast(error.message); } });
 </script>
 </body>
 </html>

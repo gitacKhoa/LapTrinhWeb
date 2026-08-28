@@ -493,3 +493,9 @@ table { border-collapse: collapse; width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+.data-form-overlay { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgba(23,32,51,.45); }
+.data-form { width:min(620px,100%); max-height:90vh; overflow:auto; background:var(--surface); box-shadow:var(--shadow-md); }
+.data-form-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; padding:20px; }
+.data-form-fields .field { display:flex; flex-direction:column; gap:6px; }
+.data-form-fields .field span { font-size:12px; font-weight:600; }
+@media (max-width:700px) { .data-form-fields { grid-template-columns:1fr; } }
