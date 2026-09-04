@@ -31,6 +31,9 @@ SELECT u.id, c.id, 7 + MOD(u.id, 4) * .5, 6 + MOD(u.id, 5) * .5, 6 + MOD(u.id, 6
   ROUND((7 + MOD(u.id, 4) * .5) * .1 + (6 + MOD(u.id, 5) * .5) * .3 + (6 + MOD(u.id, 6) * .6) * .6, 2), '', c.trang_thai
 FROM users u CROSS JOIN courses c WHERE u.vai_tro = 'sinh_vien' AND c.ma_mon = 'IT4409';
 
+INSERT IGNORE INTO course_students (sinh_vien_id, mon_hoc_id)
+SELECT u.id, c.id FROM users u CROSS JOIN courses c WHERE u.vai_tro = 'sinh_vien';
+
 INSERT IGNORE INTO pending_actions (course_id, owner_id, noi_dung, han_xu_ly, trang_thai)
 SELECT c.id, c.giang_vien_id, CONCAT(c.ma_mon, ' - cần xử lý bảng điểm'), '2026-08-30', 'pending'
 FROM courses c WHERE c.trang_thai IN ('entering', 'review');

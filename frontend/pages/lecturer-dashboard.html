@@ -29,10 +29,6 @@
 
   <div>
     <header class="topbar">
-      <div class="topbar-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="Tìm sinh viên, lớp học phần...">
-      </div>
       <div class="topbar-right">
         <button class="topbar-icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
         <div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div>
@@ -42,8 +38,8 @@
     <main class="content">
       <div class="page-header">
         <div class="eyebrow">ACADEMIC RECORD / 2026 / SEMESTER 01</div>
-        <h1>Good morning, Dr. Nguyễn.</h1>
-        <div class="sub">Học kỳ 1 — 2026 · Bạn đang phụ trách 2 học phần</div>
+        <h1 id="lecturerGreeting">Tổng quan giảng dạy</h1>
+        <div class="sub" id="lecturerSummary">Đang tải dữ liệu giảng dạy...</div>
       </div>
 
       <div class="panel">
@@ -53,38 +49,7 @@
             <thead>
               <tr><th>Học phần</th><th>Lớp</th><th class="num">Sinh viên</th><th>Tiến độ</th><th>Trạng thái</th><th></th></tr>
             </thead>
-            <tbody id="teachingBody">
-              <tr>
-                <td class="name-cell">IT4409 — Lập trình Web</td>
-                <td class="mono">D23CQCN01</td>
-                <td class="num mono">62</td>
-                <td>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:90px; height:5px; background:var(--surface-2); border-radius:3px; overflow:hidden;">
-                      <div style="width:85%; height:100%; background:var(--blue);"></div>
-                    </div>
-                    <span class="mono" style="font-size:12px; color:var(--neutral);">85%</span>
-                  </div>
-                </td>
-                <td><span class="badge warning">Đang nhập</span></td>
-                <td><a href="grade-entry.html" class="btn btn-primary btn-sm">Nhập điểm</a></td>
-              </tr>
-              <tr>
-                <td class="name-cell">IT3103 — Cấu trúc dữ liệu</td>
-                <td class="mono">D22CQCN02</td>
-                <td class="num mono">46</td>
-                <td>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:90px; height:5px; background:var(--surface-2); border-radius:3px; overflow:hidden;">
-                      <div style="width:100%; height:100%; background:var(--success);"></div>
-                    </div>
-                    <span class="mono" style="font-size:12px; color:var(--neutral);">100%</span>
-                  </div>
-                </td>
-                <td><span class="badge success">Đã công bố</span></td>
-                <td><a href="class-statistics.html?course=IT3103" class="btn btn-secondary btn-sm">Xem thống kê</a></td>
-              </tr>
-            </tbody>
+            <tbody id="teachingBody"></tbody>
           </table>
         </div>
       </div>
@@ -94,23 +59,11 @@
       <div class="grid-2">
         <div class="panel">
           <div class="panel-header"><h2>Pending Tasks</h2></div>
-          <div class="panel-body">
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--warning);"></div>
-              <div><div class="text">Hoàn tất nhập điểm cuối kỳ — IT4409 (còn 1 sinh viên thiếu điểm)</div><div class="time">Hạn: 26/08/2026</div></div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--blue);"></div>
-              <div><div class="text">Review điểm bất thường trước khi submit — IT4409</div><div class="time">Hạn: 27/08/2026</div></div>
-            </div>
-          </div>
+          <div class="panel-body" id="pendingBody"></div>
         </div>
         <div class="panel">
           <div class="panel-header"><h2>Grade Status</h2></div>
-          <div class="panel-body">
-            <div class="timeline-item"><div class="timeline-dot"></div><div><div class="text">IT4409 — Lập trình Web</div><div class="time"><span class="badge warning">Đang nhập</span></div></div></div>
-            <div class="timeline-item"><div class="timeline-dot"></div><div><div class="text">IT3103 — Cấu trúc dữ liệu</div><div class="time"><span class="badge success">Đã công bố</span></div></div></div>
-          </div>
+          <div class="panel-body" id="statusBody"></div>
         </div>
       </div>
     </main>
@@ -120,6 +73,12 @@
 <script src="../js/data.js"></script><script src="../js/app.js"></script><script>
   const teachingBody = document.getElementById('teachingBody');
   teachingBody.innerHTML = '';
-  apiGet('/courses').then(courses => courses.forEach(course => { const progress = course.status === 'published' ? 100 : 0; const badge = statusBadge(course.status); const row = document.createElement('tr'); row.innerHTML = `<td class="name-cell">${course.code} — ${course.name}</td><td class="mono">—</td><td class="num mono">${course.students}</td><td>${progress}%</td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a href="${progress ? `class-statistics.html?course=${course.id}` : `grade-entry.html?course=${course.id}`}" class="btn btn-primary btn-sm">${progress ? 'Xem thống kê' : 'Nhập điểm'}</a></td>`; teachingBody.appendChild(row); })).catch(error => showToast(error.message));
+  apiGet('/courses').then(courses => {
+    document.getElementById('lecturerSummary').textContent = `${courses.length} học phần đang phụ trách`;
+    courses.forEach(course => { const badge = statusBadge(course.status); const row = document.createElement('tr'); row.innerHTML = `<td class="name-cell">${course.code} — ${course.name}</td><td class="mono">${course.className || '—'}</td><td class="num mono">${course.students}</td><td>—</td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a href="grade-entry.html?course=${course.id}" class="btn btn-primary btn-sm">Nhập điểm</a></td>`; teachingBody.appendChild(row); });
+    const pending = courses.filter(course => course.status !== 'published');
+    document.getElementById('pendingBody').innerHTML = pending.length ? pending.map(course => `<div class="timeline-item"><div class="timeline-dot" style="background:var(--warning);"></div><div><div class="text">${course.code} — cần xử lý bảng điểm</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`).join('') : '<div class="state-block"><div class="state-title">Không có nhiệm vụ đang chờ</div></div>';
+    document.getElementById('statusBody').innerHTML = courses.length ? courses.map(course => `<div class="timeline-item"><div class="timeline-dot"></div><div><div class="text">${course.code} — ${course.name}</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`).join('') : '<div class="state-block"><div class="state-title">Chưa có học phần</div></div>';
+  }).catch(error => showToast(error.message));
 </script>
 </html>

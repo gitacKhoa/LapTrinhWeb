@@ -30,7 +30,7 @@
     <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
   </aside>
   <div>
-    <header class="topbar"><div class="topbar-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="courseSearch" type="text" placeholder="Tìm học phần, lớp học phần..."></div><div class="topbar-right"><div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div></div></header>
+    <header class="topbar"><div class="topbar-right"><div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div></div></header>
     <main class="content">
       <div class="page-header page-header-row"><div><div class="eyebrow">LECTURER / COURSE PORTFOLIO</div><h1>Học phần của tôi</h1><div class="sub">Các lớp học phần bạn phụ trách trong Học kỳ 1, năm học 2026–2027</div></div><a class="btn btn-primary" href="grade-entry.html">Nhập điểm</a></div>
       <div class="course-overview"><div class="overview-item"><div class="eyebrow">HỌC PHẦN</div><div class="value" id="courseCount">—</div></div><div class="overview-item"><div class="eyebrow">SINH VIÊN</div><div class="value" id="studentCount">—</div></div><div class="overview-item"><div class="eyebrow">CẦN XỬ LÝ</div><div class="value" id="actionCount">—</div></div></div>
@@ -48,10 +48,10 @@
   document.getElementById('actionCount').textContent = ownedCourses.filter(course => course.status !== 'published').length;
   ownedCourses.forEach(course => {
     const badge = statusBadge(course.status);
-    const progress = course.status === 'published' ? 100 : 85;
+    const progress = course.students ? Math.round(course.graded / course.students * 100) : 0;
     const row = document.createElement('tr');
     row.dataset.status = course.status;
-    row.innerHTML = `<td><div class="course-title"><span class="course-code">${course.code}</span><span class="name-cell">${course.name}</span></div><div class="course-meta">${course.credits} tín chỉ · ${course.semester}</div></td><td class="mono">${course.code === 'IT4409' ? 'D23CQCN01' : 'D22CQCN02'}</td><td class="num mono">${course.students}</td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:90px;height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden"><div style="width:${progress}%;height:100%;background:${progress === 100 ? 'var(--success)' : 'var(--blue)'}"></div></div><span class="mono" style="font-size:12px;color:var(--neutral)">${progress}%</span></div></td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a class="btn btn-secondary btn-sm" href="class-statistics.html?course=${course.code}">Xem thống kê</a></td>`;
+    row.innerHTML = `<td><div class="course-title"><span class="course-code">${course.code}</span><span class="name-cell">${course.name}</span></div><div class="course-meta">${course.credits} tín chỉ · ${course.semester}</div></td><td class="mono">—</td><td class="num mono">${course.students}</td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:90px;height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden"><div style="width:${progress}%;height:100%;background:${progress === 100 ? 'var(--success)' : 'var(--blue)'}"></div></div><span class="mono" style="font-size:12px;color:var(--neutral)">${progress}%</span></div></td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a class="btn btn-secondary btn-sm" href="class-statistics.html?course=${course.id}">Xem thống kê</a></td>`;
     courseBody.appendChild(row);
   }); }).catch(error => showToast(error.message));
   const filterRows = () => { const query = document.getElementById('courseFilter').value.toLowerCase(); const status = document.getElementById('statusFilter').value; [...courseBody.rows].forEach(row => { row.style.display = row.textContent.toLowerCase().includes(query) && (!status || row.dataset.status === status) ? '' : 'none'; }); };

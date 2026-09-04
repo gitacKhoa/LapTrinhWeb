@@ -46,6 +46,15 @@ CREATE TABLE IF NOT EXISTS grades (
   FOREIGN KEY (mon_hoc_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS course_students (
+  sinh_vien_id INT NOT NULL,
+  mon_hoc_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (sinh_vien_id, mon_hoc_id),
+  FOREIGN KEY (sinh_vien_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (mon_hoc_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS terms (
   id INT AUTO_INCREMENT PRIMARY KEY,
   ma_hoc_ky VARCHAR(30) UNIQUE NOT NULL,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nhập điểm — IT4409 — Academic Record</title>
+<title>Nhập điểm — Academic Record</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/design-system.css">
 <style>
@@ -54,10 +54,6 @@
 
   <div>
     <header class="topbar">
-      <div class="topbar-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="Tìm sinh viên trong lớp...">
-      </div>
       <div class="topbar-right">
         <div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div>
       </div>
@@ -68,12 +64,12 @@
       <div class="page-header page-header-row">
         <div>
           <div class="eyebrow">GRADE ENTRY</div>
-          <h1>CS101 — Lập trình Web</h1>
+          <h1 id="courseTitle">Nhập điểm</h1>
         </div>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-secondary btn-sm" id="undoBtn">Undo</button>
-          <button class="btn btn-secondary" id="saveDraftBtn">Save draft</button>
-          <button class="btn btn-primary" id="submitBtn">Submit</button>
+          <button class="btn btn-secondary" id="saveDraftBtn" disabled>Lưu điểm trực tiếp</button>
+          <button class="btn btn-primary" id="submitBtn" disabled>Gửi duyệt</button>
         </div>
       </div>
 
@@ -88,9 +84,9 @@
       </div>
 
       <div class="class-meta">
-        <div><div class="m-label">Class</div><div class="m-value">D23CQCN01</div></div>
-        <div><div class="m-label">Semester</div><div class="m-value">2026 — Học kỳ 1</div></div>
-        <div><div class="m-label">Lecturer</div><div class="m-value">TS. Nguyễn Văn A</div></div>
+        <div><div class="m-label">Class</div><div class="m-value" id="className">—</div></div>
+        <div><div class="m-label">Semester</div><div class="m-value" id="semesterName">—</div></div>
+        <div><div class="m-label">Lecturer</div><div class="m-value" id="lecturerName">—</div></div>
         <div><div class="m-label">Number of students</div><div class="m-value" id="studentCount">—</div></div>
       </div>
 
@@ -150,6 +146,9 @@
 <script>
   const state = [];
   const entryBody = document.getElementById('entryBody');
+  const saveDraftBtn = document.getElementById('saveDraftBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  let isLoading = true;
   document.getElementById('studentCount').textContent = state.length;
 
   function computeTotal(row) {
@@ -193,8 +192,8 @@
         const idx = +inp.dataset.idx;
         const field = inp.dataset.field;
         const raw = inp.value.trim();
-        const num = raw === '' ? null : parseFloat(raw);
-        const invalid = raw !== '' && (isNaN(num) || num < 0 || num > 10);
+        const num = raw === '' ? null : Number(raw);
+        const invalid = raw !== '' && (!/^\d+(\.\d+)?$/.test(raw) || !Number.isFinite(num) || num < 0 || num > 10);
 
         inp.classList.toggle('invalid', invalid);
         if (!invalid) {
@@ -210,22 +209,56 @@
   }
 
   const courseId = new URLSearchParams(window.location.search).get('course') || 1;
-  apiGet(`/grades?courseId=${courseId}`).then(rows => {
+  apiGet('/courses').then(courses => {
+    const course = courses.find(item => String(item.id) === String(courseId));
+    if (!course) throw new Error('Không tìm thấy học phần hoặc bạn không có quyền truy cập');
+    document.getElementById('courseTitle').textContent = `${course.code} — ${course.name}`;
+    document.getElementById('className').textContent = course.className || '—';
+    document.getElementById('semesterName').textContent = course.semester || '—';
+    document.getElementById('lecturerName').textContent = course.lecturer || '—';
+    return apiGet(`/grades?courseId=${courseId}`);
+  }).then(rows => {
     state.push(...rows);
     document.getElementById('studentCount').textContent = state.length;
     renderAll();
+    isLoading = false;
+    saveDraftBtn.disabled = false;
+    submitBtn.disabled = false;
   }).catch(error => showToast(error.message));
 
-  document.getElementById('saveDraftBtn').addEventListener('click', async () => {
+  async function saveGrades(status) {
+    const invalidInput = entryBody.querySelector('.grade-input.invalid');
+    if (invalidInput) {
+      showToast('Còn ô điểm không hợp lệ — vui lòng kiểm tra lại.');
+      invalidInput.focus();
+      return false;
+    }
+    if (status === 'submitted' && state.some(row => computeTotal(row) === null)) {
+      showToast('Vui lòng nhập đủ chuyên cần, giữa kỳ và cuối kỳ trước khi gửi.');
+      return false;
+    }
+    const button = status === 'draft' ? saveDraftBtn : submitBtn;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Đang lưu...';
     try {
-      await apiSave('/grades/bulk', { grades: state.map(row => ({ studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'draft' })) });
-      showToast('Đã lưu nháp bảng điểm.');
-    } catch (error) { showToast(error.message); }
-  });
+      await apiSave('/grades/bulk', { grades: state.map(row => ({ studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status })) });
+      showToast(status === 'draft' ? 'Đã lưu điểm trực tiếp vào cơ sở dữ liệu.' : 'Đã gửi bảng điểm để duyệt.');
+      return true;
+    } catch (error) {
+      showToast(error.message);
+      return false;
+    } finally {
+      button.disabled = isLoading;
+      button.textContent = originalText;
+    }
+  }
+  saveDraftBtn.addEventListener('click', () => saveGrades('draft'));
   document.getElementById('submitBtn').addEventListener('click', async () => {
-    const hasInvalid = entryBody.querySelector('.grade-input.invalid');
-    if (hasInvalid) { showToast('Còn ô điểm không hợp lệ — vui lòng kiểm tra lại trước khi gửi.'); return; }
-    try { await apiSave('/grades/bulk', { grades: state.map(row => ({ studentId: row.studentId, courseId: row.courseId || courseId, attendance: row.attendance, midterm: row.midterm, final: row.final, note: row.note, status: 'submitted' })) }); await apiRequest(`/approvals/${courseId}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) }); showToast('Đã gửi bảng điểm để duyệt.'); } catch (error) { showToast(error.message); }
+    const saved = await saveGrades('submitted');
+    if (saved) {
+      try { await apiRequest(`/approvals/${courseId}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) }); } catch (error) { showToast(error.message); }
+    }
   });
   document.getElementById('importExcelBtn').addEventListener('click', async () => {
     const file = document.getElementById('excelFile').files[0];

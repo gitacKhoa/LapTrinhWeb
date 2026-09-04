@@ -56,9 +56,9 @@ function normalizeGradeInput(input, rowNumber) {
 }
 
 async function assertStudentInCourse(studentId, courseId) {
-  const [students] = await pool.query(`SELECT g.sinh_vien_id FROM grades g
-    JOIN users u ON u.id=g.sinh_vien_id
-    WHERE (g.sinh_vien_id=? OR u.mssv=?) AND g.mon_hoc_id=? AND u.vai_tro='sinh_vien'`, [studentId, studentId, courseId]);
+  const [students] = await pool.query(`SELECT cs.sinh_vien_id FROM course_students cs
+    JOIN users u ON u.id=cs.sinh_vien_id
+    WHERE (cs.sinh_vien_id=? OR u.mssv=?) AND cs.mon_hoc_id=? AND u.vai_tro='sinh_vien'`, [studentId, studentId, courseId]);
   if (!students.length) {
     const error = new Error('Sinh viên không thuộc danh sách của học phần');
     error.status = 400;
@@ -176,8 +176,12 @@ router.get('/courses', asyncRoute(async (req, res) => {
   const courseParams = req.auth.role === 'giao_vien' ? [req.auth.id] : [];
   const [rows] = await pool.query(`SELECT c.id, c.ma_mon AS code, c.ten_mon AS name, c.tin_chi AS credits,
     c.khoa AS dept, c.hoc_ky AS semester, c.trang_thai AS status, u.ho_ten AS lecturer,
-    COUNT(g.id) AS students FROM courses c LEFT JOIN users u ON u.id=c.giang_vien_id
-    LEFT JOIN grades g ON g.mon_hoc_id=c.id ${courseFilter} GROUP BY c.id ORDER BY c.id DESC`, courseParams);
+    COUNT(DISTINCT cs.sinh_vien_id) AS students,
+    COUNT(DISTINCT CASE WHEN g.diem_tong_ket IS NOT NULL THEN g.sinh_vien_id END) AS graded
+    FROM courses c LEFT JOIN users u ON u.id=c.giang_vien_id
+    LEFT JOIN course_students cs ON cs.mon_hoc_id=c.id
+    LEFT JOIN grades g ON g.mon_hoc_id=c.id AND g.sinh_vien_id=cs.sinh_vien_id
+    ${courseFilter} GROUP BY c.id ORDER BY c.id DESC`, courseParams);
   res.json(rows);
 }));
 
@@ -208,13 +212,14 @@ router.get('/grades', asyncRoute(async (req, res) => {
   if (req.query.studentId) { conditions.push('g.sinh_vien_id=?'); params.push(req.query.studentId); }
   if (req.auth.role === 'giao_vien') { conditions.push('c.giang_vien_id=?'); params.push(req.auth.id); }
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-  const [rows] = await pool.query(`SELECT g.id, g.sinh_vien_id AS studentId, u.mssv, u.ho_ten AS name,
-    g.mon_hoc_id AS courseId, c.ma_mon AS code, c.ten_mon AS courseName, g.diem_chuyen_can AS attendance,
+  const [rows] = await pool.query(`SELECT g.id, cs.sinh_vien_id AS studentId, u.mssv, u.ho_ten AS name,
+    cs.mon_hoc_id AS courseId, c.ma_mon AS code, c.ten_mon AS courseName, g.diem_chuyen_can AS attendance,
     g.diem_giua_ky AS midterm, g.diem_cuoi_ky AS final, g.diem_tong_ket AS total, g.ghi_chu AS note,
     g.trang_thai AS status, c.tin_chi AS credits, c.hoc_ky AS semester,
     CASE WHEN g.diem_tong_ket >= 8.5 THEN 'A' WHEN g.diem_tong_ket >= 7 THEN 'B'
       WHEN g.diem_tong_ket >= 5.5 THEN 'C' WHEN g.diem_tong_ket >= 4 THEN 'D' ELSE 'F' END AS letter
-    FROM grades g JOIN users u ON u.id=g.sinh_vien_id JOIN courses c ON c.id=g.mon_hoc_id ${where} ORDER BY u.mssv`, params);
+    FROM course_students cs JOIN users u ON u.id=cs.sinh_vien_id JOIN courses c ON c.id=cs.mon_hoc_id
+    LEFT JOIN grades g ON g.sinh_vien_id=cs.sinh_vien_id AND g.mon_hoc_id=cs.mon_hoc_id ${where.replaceAll('g.sinh_vien_id', 'cs.sinh_vien_id').replaceAll('g.mon_hoc_id', 'cs.mon_hoc_id')} ORDER BY u.mssv`, params);
   res.json(rows);
 }));
 
