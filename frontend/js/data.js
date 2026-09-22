@@ -8,7 +8,18 @@ function gradeLevel(score) {
 }
 
 function statusBadge(status) {
-  const map = { active: ['Đang học', 'success'], graduated: ['Đã tốt nghiệp', 'info'], warning: ['Cảnh báo học vụ', 'danger'], draft: ['Nháp', 'neutral'], entering: ['Đang nhập', 'warning'], review: ['Đang duyệt', 'info'], submitted: ['Đã gửi', 'info'], under_review: ['Đang chờ duyệt', 'warning'], published: ['Đã công bố', 'success'], locked: ['Đã khóa', 'neutral'] };
+  const map = {
+    active: ['Đang học', 'success'],
+    graduated: ['Đã tốt nghiệp', 'info'],
+    warning: ['Cảnh báo học vụ', 'danger'],
+    draft: ['Nháp', 'neutral'],
+    entering: ['Đang nhập', 'warning'],
+    review: ['Đang duyệt', 'info'],
+    submitted: ['Đã gửi', 'info'],
+    under_review: ['Đang chờ duyệt', 'warning'],
+    published: ['Đã công bố', 'success'],
+    locked: ['Đã khóa', 'neutral'],
+  };
   const [label, cls] = map[status] || [status || '—', 'neutral'];
   return { label, cls };
 }

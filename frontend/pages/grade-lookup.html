@@ -1,109 +1,310 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tra cứu điểm — Academic Record</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/design-system.css">
-<style>
-  .lookup-summary { display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 24px; }
-  .lookup-summary .stat-cell { padding: 16px 20px; }
-  .lookup-summary .stat-value { font-size: 22px; }
-  .lookup-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
-  .lookup-toolbar .filter-bar { flex: 1; margin: 0; }
-  .result-count { color: var(--neutral); font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
-  .grade-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; color: var(--neutral); font-size: 12px; }
-  .grade-note svg { flex: 0 0 auto; margin-top: 2px; color: var(--blue); }
-  .grade-table .published-score { font-weight: 700; color: var(--navy); }
-  @media (max-width: 700px) {
-    .topbar { padding: 14px 18px; }
-    .topbar-user .who { display: none; }
-    .content { padding: 24px 18px 44px; }
-    .lookup-summary { grid-template-columns: 1fr; }
-    .lookup-summary .stat-cell { border-right: 0; border-bottom: 1px solid var(--line); }
-    .lookup-summary .stat-cell:last-child { border-bottom: 0; }
-    .lookup-toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
-    .lookup-toolbar .filter-bar { flex-direction: column; align-items: stretch; }
-    .filter-bar .search-inline { max-width: none; }
-    .result-count { text-align: right; }
-  }
-</style>
-</head>
-<body>
-<div class="app-shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand"><div class="system-name">Academic Record</div><div class="system-tag">STUDENT PORTAL</div></div>
-    <div class="sidebar-role"><div class="label">Đăng nhập với vai trò</div><div class="value">Sinh viên</div></div>
-    <nav class="sidebar-nav">
-      <a href="student-dashboard.html">Academic Record</a>
-      <a href="grade-lookup.html" class="active">Tra cứu điểm</a>
-      <a href="profile.html">Hồ sơ cá nhân</a>
-    </nav>
-    <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
-  </aside>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tra cứu điểm — Academic Record</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/design-system.css" />
+    <style>
+      .lookup-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin-bottom: 24px;
+      }
+      .lookup-summary .stat-cell {
+        padding: 16px 20px;
+      }
+      .lookup-summary .stat-value {
+        font-size: 22px;
+      }
+      .lookup-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      .lookup-toolbar .filter-bar {
+        flex: 1;
+        margin: 0;
+      }
+      .result-count {
+        color: var(--neutral);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .grade-note {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 16px;
+        color: var(--neutral);
+        font-size: 12px;
+      }
+      .grade-note svg {
+        flex: 0 0 auto;
+        margin-top: 2px;
+        color: var(--blue);
+      }
+      .grade-table .published-score {
+        font-weight: 700;
+        color: var(--navy);
+      }
+      @media (max-width: 700px) {
+        .topbar {
+          padding: 14px 18px;
+        }
+        .topbar-user .who {
+          display: none;
+        }
+        .content {
+          padding: 24px 18px 44px;
+        }
+        .lookup-summary {
+          grid-template-columns: 1fr;
+        }
+        .lookup-summary .stat-cell {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .lookup-summary .stat-cell:last-child {
+          border-bottom: 0;
+        }
+        .lookup-toolbar {
+          align-items: stretch;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .lookup-toolbar .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .filter-bar .search-inline {
+          max-width: none;
+        }
+        .result-count {
+          text-align: right;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="system-name">Academic Record</div>
+          <div class="system-tag">STUDENT PORTAL</div>
+        </div>
+        <div class="sidebar-role">
+          <div class="label">Đăng nhập với vai trò</div>
+          <div class="value">Sinh viên</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="student-dashboard.html">Academic Record</a>
+          <a href="grade-lookup.html" class="active">Tra cứu điểm</a>
+          <a href="profile.html">Hồ sơ cá nhân</a>
+        </nav>
+        <div class="sidebar-foot">
+          © 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 17l5-5-5-5" />
+              <path d="M15 12H3" />
+              <path d="M21 19V5a2 2 0 0 0-2-2h-6" /></svg
+            >Đăng xuất</a
+          >
+        </div>
+      </aside>
 
-  <div>
-    <header class="topbar">
-      <div class="topbar-right"><button class="topbar-icon-btn" data-tooltip="Thông báo" aria-label="Thông báo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button><div class="topbar-user"><div class="avatar">AN</div><div class="who"><div class="name">Nguyễn Văn An</div><div class="role">MSSV 22110234</div></div></div></div>
-    </header>
-
-    <main class="content">
-      <div class="page-header"><div class="eyebrow">STUDENT PORTAL / ACADEMIC RECORD</div><h1>Tra cứu điểm</h1><div class="sub">Xem kết quả học tập chi tiết theo từng học phần và học kỳ</div></div>
-
-      <div class="stat-row lookup-summary">
-        <div class="stat-cell"><div class="stat-label">GPA tích lũy</div><div class="stat-value" id="lookupGpa">—</div><div class="stat-delta up">Từ dữ liệu điểm</div></div>
-        <div class="stat-cell"><div class="stat-label">Tín chỉ đã tích lũy</div><div class="stat-value" id="lookupCredits">—</div><div class="stat-delta" id="lookupCompletion">—</div></div>
-        <div class="stat-cell"><div class="stat-label">Học phần đã công bố</div><div class="stat-value" id="publishedCount">—</div><div class="stat-delta">Trong tổng số học phần</div></div>
-      </div>
-
-      <section class="panel" aria-labelledby="grades-title">
-        <div class="panel-header"><h2 id="grades-title">Bảng điểm cá nhân</h2><span class="eyebrow">CẬP NHẬT 24/08/2026</span></div>
-        <div class="lookup-toolbar">
-          <div class="filter-bar">
-            <div class="search-inline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="gradeSearch" placeholder="Tìm mã hoặc tên học phần"></div>
-            <select id="filterSemester" aria-label="Lọc theo học kỳ"><option value="">Tất cả học kỳ</option><option value="2026-HK1">2026 — HK1</option><option value="2025-HK2">2025 — HK2</option><option value="2025-HK1">2025 — HK1</option></select>
-            <select id="filterStatus" aria-label="Lọc theo trạng thái"><option value="">Tất cả trạng thái</option><option value="published">Đã công bố</option><option value="draft">Chưa công bố</option></select>
+      <div>
+        <header class="topbar">
+          <div class="topbar-right">
+            <button class="topbar-icon-btn" data-tooltip="Thông báo" aria-label="Thông báo">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg
+              ><span class="dot"></span>
+            </button>
+            <div class="topbar-user">
+              <div class="avatar">AN</div>
+              <div class="who">
+                <div class="name">Nguyễn Văn An</div>
+                <div class="role">MSSV 22110234</div>
+              </div>
+            </div>
           </div>
-          <div class="result-count" id="resultCount">— học phần</div>
-        </div>
-        <div class="data-table-wrap">
-          <table class="data-table grade-table">
-            <thead><tr><th>Mã HP</th><th>Học phần</th><th class="num">TC</th><th class="num">QT</th><th class="num">GK</th><th class="num">CK</th><th class="num">Tổng kết</th><th>Điểm chữ</th><th>Học kỳ</th></tr></thead>
-            <tbody id="gradesBody"></tbody>
-          </table>
-        </div>
-      </section>
-      <div class="grade-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Điểm “Chưa công bố” chưa được tính vào GPA tích lũy. Nếu phát hiện sai lệch, vui lòng liên hệ cố vấn học tập.</span></div>
-    </main>
-  </div>
-</div>
-<script src="../js/data.js"></script>
-<script src="../js/app.js"></script>
-<script>
-  const gradesBody = document.getElementById('gradesBody');
-  const renderGrades = (grades) => {
-    gradesBody.innerHTML = '';
-    grades.forEach(grade => {
-      const badge = grade.status === 'published' ? `<span class="badge success">${grade.letter}</span>` : '<span class="badge neutral">Chưa công bố</span>';
-      const row = document.createElement('tr');
-      row.dataset.semester = grade.semester;
-      row.dataset.status = grade.status;
-      row.innerHTML = `<td class="id-cell">${grade.code}</td><td class="name-cell">${grade.courseName}</td><td class="num mono">${grade.credits ?? '—'}</td><td class="num mono">${grade.attendance ?? '—'}</td><td class="num mono">${grade.midterm ?? '—'}</td><td class="num mono">${grade.final ?? '—'}</td><td class="num mono ${grade.status === 'published' ? 'published-score' : ''}">${grade.total ?? '—'}</td><td>${badge}</td><td class="mono">${grade.semester ?? '—'}</td>`;
-      gradesBody.appendChild(row);
-    });
-  };
-  apiGet('/students').then(students => { const student = students[0]; document.getElementById('lookupGpa').textContent = Number(student.gpa || 0).toFixed(2); document.getElementById('lookupCredits').textContent = `${student.credits} / 130`; document.getElementById('lookupCompletion').textContent = `${Math.round(Number(student.credits || 0) / 130 * 100)}% chương trình học`; return apiGet(`/grades?studentId=${student.id}`); }).then(grades => {
-    renderGrades(grades);
-    document.getElementById('publishedCount').textContent = `${grades.filter(grade => grade.status === 'published').length} / ${grades.length}`;
-    updateCount();
-  }).catch(error => showToast(error.message));
-  const updateCount = () => { document.getElementById('resultCount').textContent = `${[...gradesBody.rows].filter(row => row.style.display !== 'none').length} học phần`; };
-  initTableSearch(document.getElementById('gradeSearch'), gradesBody);
-  document.getElementById('gradeSearch').addEventListener('input', updateCount);
-  document.getElementById('filterSemester').addEventListener('change', event => { [...gradesBody.rows].forEach(row => { row.style.display = (!event.target.value || row.dataset.semester === event.target.value) ? '' : 'none'; }); updateCount(); });
-  document.getElementById('filterStatus').addEventListener('change', event => { [...gradesBody.rows].forEach(row => { row.style.display = (!event.target.value || row.dataset.status === event.target.value) ? '' : 'none'; }); updateCount(); });
-  updateCount();
-</script>
-</body>
+        </header>
+
+        <main class="content">
+          <div class="page-header">
+            <div class="eyebrow">STUDENT PORTAL / ACADEMIC RECORD</div>
+            <h1>Tra cứu điểm</h1>
+            <div class="sub">Xem kết quả học tập chi tiết theo từng học phần và học kỳ</div>
+          </div>
+
+          <div class="stat-row lookup-summary">
+            <div class="stat-cell">
+              <div class="stat-label">GPA tích lũy</div>
+              <div class="stat-value" id="lookupGpa">—</div>
+              <div class="stat-delta up">Từ dữ liệu điểm</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-label">Tín chỉ đã tích lũy</div>
+              <div class="stat-value" id="lookupCredits">—</div>
+              <div class="stat-delta" id="lookupCompletion">—</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-label">Học phần đã công bố</div>
+              <div class="stat-value" id="publishedCount">—</div>
+              <div class="stat-delta">Trong tổng số học phần</div>
+            </div>
+          </div>
+
+          <section class="panel" aria-labelledby="grades-title">
+            <div class="panel-header">
+              <h2 id="grades-title">Bảng điểm cá nhân</h2>
+              <span class="eyebrow">CẬP NHẬT 24/08/2026</span>
+            </div>
+            <div class="lookup-toolbar">
+              <div class="filter-bar">
+                <div class="search-inline">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" /></svg
+                  ><input type="text" id="gradeSearch" placeholder="Tìm mã hoặc tên học phần" />
+                </div>
+                <select id="filterSemester" aria-label="Lọc theo học kỳ">
+                  <option value="">Tất cả học kỳ</option>
+                  <option value="2026-HK1">2026 — HK1</option>
+                  <option value="2025-HK2">2025 — HK2</option>
+                  <option value="2025-HK1">2025 — HK1</option>
+                </select>
+                <select id="filterStatus" aria-label="Lọc theo trạng thái">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="published">Đã công bố</option>
+                  <option value="draft">Chưa công bố</option>
+                </select>
+              </div>
+              <div class="result-count" id="resultCount">— học phần</div>
+            </div>
+            <div class="data-table-wrap">
+              <table class="data-table grade-table">
+                <thead>
+                  <tr>
+                    <th>Mã HP</th>
+                    <th>Học phần</th>
+                    <th class="num">TC</th>
+                    <th class="num">QT</th>
+                    <th class="num">GK</th>
+                    <th class="num">CK</th>
+                    <th class="num">Tổng kết</th>
+                    <th>Điểm chữ</th>
+                    <th>Học kỳ</th>
+                  </tr>
+                </thead>
+                <tbody id="gradesBody"></tbody>
+              </table>
+            </div>
+          </section>
+          <div class="grade-note">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 11v5M12 8h.01" /></svg
+            ><span
+              >Điểm “Chưa công bố” chưa được tính vào GPA tích lũy. Nếu phát hiện sai lệch, vui lòng
+              liên hệ cố vấn học tập.</span
+            >
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="../js/data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+      const gradesBody = document.getElementById('gradesBody');
+      const currentUser = getCurrentUser();
+      const renderGrades = (grades) => {
+        gradesBody.innerHTML = '';
+        grades.forEach((grade) => {
+          const badge =
+            grade.status === 'published'
+              ? `<span class="badge success">${grade.letter}</span>`
+              : '<span class="badge neutral">Chưa công bố</span>';
+          const row = document.createElement('tr');
+          row.dataset.semester = grade.semester;
+          row.dataset.status = grade.status;
+          row.innerHTML = `<td class="id-cell">${grade.code}</td><td class="name-cell">${grade.courseName}</td><td class="num mono">${grade.credits ?? '—'}</td><td class="num mono">${grade.attendance ?? '—'}</td><td class="num mono">${grade.midterm ?? '—'}</td><td class="num mono">${grade.final ?? '—'}</td><td class="num mono ${grade.status === 'published' ? 'published-score' : ''}">${grade.total ?? '—'}</td><td>${badge}</td><td class="mono">${grade.semester ?? '—'}</td>`;
+          gradesBody.appendChild(row);
+        });
+      };
+
+      if (!currentUser) {
+        location.href = 'login.html';
+      } else {
+        apiGet(`/students/${currentUser.id}`)
+          .then((student) => {
+            document.getElementById('lookupGpa').textContent = Number(student.gpa || 0).toFixed(2);
+            document.getElementById('lookupCredits').textContent = `${student.credits} / 130`;
+            document.getElementById('lookupCompletion').textContent =
+              `${Math.round((Number(student.credits || 0) / 130) * 100)}% chương trình học`;
+            return apiGet(`/grades?studentId=${student.id}`);
+          })
+          .then((grades) => {
+            renderGrades(grades);
+            document.getElementById('publishedCount').textContent =
+              `${grades.filter((grade) => grade.status === 'published').length} / ${grades.length}`;
+            updateCount();
+          })
+          .catch((error) => showToast(error.message));
+      }
+
+      const updateCount = () => {
+        document.getElementById('resultCount').textContent =
+          `${[...gradesBody.rows].filter((row) => row.style.display !== 'none').length} học phần`;
+      };
+      initTableSearch(document.getElementById('gradeSearch'), gradesBody);
+      document.getElementById('gradeSearch').addEventListener('input', updateCount);
+      document.getElementById('filterSemester').addEventListener('change', (event) => {
+        [...gradesBody.rows].forEach((row) => {
+          row.style.display =
+            !event.target.value || row.dataset.semester === event.target.value ? '' : 'none';
+        });
+        updateCount();
+      });
+      document.getElementById('filterStatus').addEventListener('change', (event) => {
+        [...gradesBody.rows].forEach((row) => {
+          row.style.display =
+            !event.target.value || row.dataset.status === event.target.value ? '' : 'none';
+        });
+        updateCount();
+      });
+      updateCount();
+    </script>
+  </body>
 </html>

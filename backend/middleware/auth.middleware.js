@@ -15,7 +15,8 @@ function authenticate(req, res, next) {
 
 function authorize(...roles) {
   return (req, res, next) => {
-    if (!req.auth || !roles.includes(req.auth.role)) return res.status(403).json({ message: 'Bạn không có quyền thực hiện thao tác này' });
+    if (!req.auth || !roles.includes(req.auth.role))
+      return res.status(403).json({ message: 'Bạn không có quyền thực hiện thao tác này' });
     next();
   };
 }

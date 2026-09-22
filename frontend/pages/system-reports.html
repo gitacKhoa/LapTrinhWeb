@@ -1,12 +1,353 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Báo cáo hệ thống — Academic Record</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="../css/design-system.css">
-<style>
-  .report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.report-card{padding:18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}.report-card h3{margin:10px 0 5px;font-size:14px}.report-card p{margin:0 0 16px;color:var(--neutral);font-size:12px}.report-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--blue);border-radius:var(--r-sm)}.report-icon svg{width:16px;height:16px}.report-card .btn{width:100%;justify-content:center}.chart{display:flex;align-items:flex-end;gap:14px;height:170px;padding-top:18px}.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}.chart-bar{width:100%;max-width:38px;background:var(--blue);border-radius:3px 3px 0 0;min-height:10px}.chart-value,.chart-label{font:11px var(--font-mono);color:var(--neutral)}.chart-value{color:var(--navy)}.report-table td{padding:11px 16px;border-bottom:1px solid var(--line);font-size:12.5px}.report-table tr:last-child td{border-bottom:0}.report-table .file-name{font-weight:600}.report-table .file-type{font:11px var(--font-mono);color:var(--neutral)}
-  @media(max-width:900px){.report-grid{grid-template-columns:1fr}}@media(max-width:700px){.topbar{padding:14px 18px}.topbar-user .who{display:none}.content{padding:24px 18px 44px}.chart{gap:8px}}
-</style>
-</head>
-<body><div class="app-shell"><aside class="sidebar"><div class="sidebar-brand"><div class="system-name">Academic Record</div><div class="system-tag">ADMIN CONSOLE</div></div><div class="sidebar-role"><div class="label">Đăng nhập với vai trò</div><div class="value">Administrator</div></div><nav class="sidebar-nav"><a href="admin-dashboard.html">Tổng quan hệ thống</a><a href="students.html">Sinh viên</a><a href="lecturers.html">Giảng viên</a><a href="courses.html">Học phần</a><a href="exams.html">Kỳ thi / Học kỳ</a><a href="grade-approval.html">Duyệt điểm</a><a href="system-reports.html" class="active">Báo cáo hệ thống</a></nav><div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div></aside><div><header class="topbar"><div class="topbar-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" placeholder="Tìm báo cáo..."></div><div class="topbar-right"><button class="topbar-icon-btn" data-tooltip="Thông báo" aria-label="Thông báo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button><div class="topbar-user"><div class="avatar">AD</div><div class="who"><div class="name">Admin Trần Văn Khoa</div><div class="role">Phòng Đào tạo</div></div></div></div></header><main class="content"><div class="page-header page-header-row"><div><div class="eyebrow">ADMIN / SYSTEM INTELLIGENCE</div><h1>Báo cáo hệ thống</h1><div class="sub">Theo dõi sức khỏe dữ liệu và xuất báo cáo vận hành học vụ</div></div><button class="btn btn-primary" id="exportAll">Xuất báo cáo tổng hợp</button></div><div class="stat-row"><div class="stat-cell"><div class="stat-label">Sinh viên đang học</div><div class="stat-value">4,286</div><div class="stat-delta up">+ 7.8% năm nay</div></div><div class="stat-cell"><div class="stat-label">Tỷ lệ công bố điểm</div><div class="stat-value">81%</div><div class="stat-delta up">+ 6% so với HK trước</div></div><div class="stat-cell"><div class="stat-label">Điểm trung bình</div><div class="stat-value">7.18</div><div class="stat-delta">Toàn hệ thống</div></div><div class="stat-cell"><div class="stat-label">Cảnh báo học vụ</div><div class="stat-value">126</div><div class="stat-delta down">2.9% sinh viên</div></div></div><div class="grid-2"><section class="panel"><div class="panel-header"><h2>Tiến độ công bố điểm</h2><span class="eyebrow">3 HỌC KỲ</span></div><div class="panel-body"><div class="chart"><div class="chart-col"><span class="chart-value">68%</span><div class="chart-bar" style="height:68%"></div><span class="chart-label">25-HK1</span></div><div class="chart-col"><span class="chart-value">76%</span><div class="chart-bar" style="height:76%"></div><span class="chart-label">25-HK2</span></div><div class="chart-col"><span class="chart-value">81%</span><div class="chart-bar" style="height:81%"></div><span class="chart-label">26-HK1</span></div></div></div></section><section class="panel"><div class="panel-header"><h2>Phân bố trạng thái</h2></div><div class="panel-body"><div class="timeline-item"><div class="timeline-dot" style="background:var(--success)"></div><div><div class="text">Đang học <strong>3,942</strong></div><div class="time">92% tổng sinh viên</div></div></div><div class="timeline-item"><div class="timeline-dot" style="background:var(--warning)"></div><div><div class="text">Cảnh báo học vụ <strong>126</strong></div><div class="time">Cần theo dõi</div></div></div><div class="timeline-item"><div class="timeline-dot" style="background:var(--blue)"></div><div><div class="text">Đã tốt nghiệp <strong>218</strong></div><div class="time">Năm học hiện tại</div></div></div></div></section></div><section class="panel" style="margin-top:20px"><div class="panel-header"><h2>Báo cáo nhanh</h2><span class="eyebrow">PDF / XLSX</span></div><div class="panel-body"><div class="report-grid"><div class="report-card"><div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16v-6"/></svg></div><h3>Báo cáo kết quả học tập</h3><p>GPA, tín chỉ và phân bố điểm theo khoa.</p><button class="btn btn-secondary btn-sm report-btn" type="button">Tạo báo cáo</button></div><div class="report-card"><div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Báo cáo tiến độ nhập điểm</h3><p>Danh sách học phần và trạng thái xử lý.</p><button class="btn btn-secondary btn-sm report-btn" type="button">Tạo báo cáo</button></div><div class="report-card"><div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Báo cáo cảnh báo học vụ</h3><p>Sinh viên cần tư vấn và hỗ trợ học tập.</p><button class="btn btn-secondary btn-sm report-btn" type="button">Tạo báo cáo</button></div></div></div></section></main></div></div>
-<script src="../js/app.js"></script><script>async function downloadReport(){const [students,courses,grades]=await Promise.all([apiGet('/students'),apiGet('/courses'),apiGet('/grades')]);const rows=[['loai','so_luong'],['sinh_vien',students.length],['hoc_phan',courses.length],['bang_diem',grades.length]];const csv=rows.map(row=>row.join(',')).join('\n');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));link.download='bao-cao-he-thong.csv';link.click();URL.revokeObjectURL(link.href)}document.getElementById('exportAll').addEventListener('click',()=>downloadReport().catch(error=>showToast(error.message)));document.querySelectorAll('.report-btn').forEach(button=>button.addEventListener('click',()=>downloadReport().catch(error=>showToast(error.message))));</script></body></html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo cáo hệ thống — Academic Record</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/design-system.css" />
+    <style>
+      .report-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .report-card {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        background: var(--surface);
+      }
+      .report-card h3 {
+        margin: 10px 0 5px;
+        font-size: 14px;
+      }
+      .report-card p {
+        margin: 0 0 16px;
+        color: var(--neutral);
+        font-size: 12px;
+      }
+      .report-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--blue-soft);
+        color: var(--blue);
+        border-radius: var(--r-sm);
+      }
+      .report-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .report-card .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+        height: 170px;
+        padding-top: 18px;
+      }
+      .chart-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        height: 100%;
+        justify-content: flex-end;
+      }
+      .chart-bar {
+        width: 100%;
+        max-width: 38px;
+        background: var(--blue);
+        border-radius: 3px 3px 0 0;
+        min-height: 10px;
+      }
+      .chart-value,
+      .chart-label {
+        font: 11px var(--font-mono);
+        color: var(--neutral);
+      }
+      .chart-value {
+        color: var(--navy);
+      }
+      .report-table td {
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+      }
+      .report-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .report-table .file-name {
+        font-weight: 600;
+      }
+      .report-table .file-type {
+        font: 11px var(--font-mono);
+        color: var(--neutral);
+      }
+      @media (max-width: 900px) {
+        .report-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 700px) {
+        .topbar {
+          padding: 14px 18px;
+        }
+        .topbar-user .who {
+          display: none;
+        }
+        .content {
+          padding: 24px 18px 44px;
+        }
+        .chart {
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="system-name">Academic Record</div>
+          <div class="system-tag">ADMIN CONSOLE</div>
+        </div>
+        <div class="sidebar-role">
+          <div class="label">Đăng nhập với vai trò</div>
+          <div class="value">Administrator</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="admin-dashboard.html">Tổng quan hệ thống</a><a href="students.html">Sinh viên</a
+          ><a href="lecturers.html">Giảng viên</a><a href="courses.html">Học phần</a
+          ><a href="exams.html">Kỳ thi / Học kỳ</a><a href="grade-approval.html">Duyệt điểm</a
+          ><a href="system-reports.html" class="active">Báo cáo hệ thống</a>
+        </nav>
+        <div class="sidebar-foot">
+          © 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 17l5-5-5-5" />
+              <path d="M15 12H3" />
+              <path d="M21 19V5a2 2 0 0 0-2-2h-6" /></svg
+            >Đăng xuất</a
+          >
+        </div>
+      </aside>
+      <div>
+        <header class="topbar">
+          <div class="topbar-search">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" /></svg
+            ><input type="text" placeholder="Tìm báo cáo..." />
+          </div>
+          <div class="topbar-right">
+            <button class="topbar-icon-btn" data-tooltip="Thông báo" aria-label="Thông báo">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg
+              ><span class="dot"></span>
+            </button>
+            <div class="topbar-user">
+              <div class="avatar">AD</div>
+              <div class="who">
+                <div class="name">Admin Trần Văn Khoa</div>
+                <div class="role">Phòng Đào tạo</div>
+              </div>
+            </div>
+          </div>
+        </header>
+        <main class="content">
+          <div class="page-header page-header-row">
+            <div>
+              <div class="eyebrow">ADMIN / SYSTEM INTELLIGENCE</div>
+              <h1>Báo cáo hệ thống</h1>
+              <div class="sub">Theo dõi sức khỏe dữ liệu và xuất báo cáo vận hành học vụ</div>
+            </div>
+            <button class="btn btn-primary" id="exportAll">Xuất báo cáo tổng hợp</button>
+          </div>
+          <div class="stat-row">
+            <div class="stat-cell">
+              <div class="stat-label">Sinh viên đang học</div>
+              <div class="stat-value">4,286</div>
+              <div class="stat-delta up">+ 7.8% năm nay</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-label">Tỷ lệ công bố điểm</div>
+              <div class="stat-value">81%</div>
+              <div class="stat-delta up">+ 6% so với HK trước</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-label">Điểm trung bình</div>
+              <div class="stat-value">7.18</div>
+              <div class="stat-delta">Toàn hệ thống</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-label">Cảnh báo học vụ</div>
+              <div class="stat-value">126</div>
+              <div class="stat-delta down">2.9% sinh viên</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Tiến độ công bố điểm</h2>
+                <span class="eyebrow">3 HỌC KỲ</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart">
+                  <div class="chart-col">
+                    <span class="chart-value">68%</span>
+                    <div class="chart-bar" style="height: 68%"></div>
+                    <span class="chart-label">25-HK1</span>
+                  </div>
+                  <div class="chart-col">
+                    <span class="chart-value">76%</span>
+                    <div class="chart-bar" style="height: 76%"></div>
+                    <span class="chart-label">25-HK2</span>
+                  </div>
+                  <div class="chart-col">
+                    <span class="chart-value">81%</span>
+                    <div class="chart-bar" style="height: 81%"></div>
+                    <span class="chart-label">26-HK1</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-header"><h2>Phân bố trạng thái</h2></div>
+              <div class="panel-body">
+                <div class="timeline-item">
+                  <div class="timeline-dot" style="background: var(--success)"></div>
+                  <div>
+                    <div class="text">Đang học <strong>3,942</strong></div>
+                    <div class="time">92% tổng sinh viên</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot" style="background: var(--warning)"></div>
+                  <div>
+                    <div class="text">Cảnh báo học vụ <strong>126</strong></div>
+                    <div class="time">Cần theo dõi</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot" style="background: var(--blue)"></div>
+                  <div>
+                    <div class="text">Đã tốt nghiệp <strong>218</strong></div>
+                    <div class="time">Năm học hiện tại</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <section class="panel" style="margin-top: 20px">
+            <div class="panel-header">
+              <h2>Báo cáo nhanh</h2>
+              <span class="eyebrow">PDF / XLSX</span>
+            </div>
+            <div class="panel-body">
+              <div class="report-grid">
+                <div class="report-card">
+                  <div class="report-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16v-6" />
+                    </svg>
+                  </div>
+                  <h3>Báo cáo kết quả học tập</h3>
+                  <p>GPA, tín chỉ và phân bố điểm theo khoa.</p>
+                  <button class="btn btn-secondary btn-sm report-btn" type="button">
+                    Tạo báo cáo
+                  </button>
+                </div>
+                <div class="report-card">
+                  <div class="report-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16v16H4z" />
+                      <path d="M8 8h8M8 12h8M8 16h5" />
+                    </svg>
+                  </div>
+                  <h3>Báo cáo tiến độ nhập điểm</h3>
+                  <p>Danh sách học phần và trạng thái xử lý.</p>
+                  <button class="btn btn-secondary btn-sm report-btn" type="button">
+                    Tạo báo cáo
+                  </button>
+                </div>
+                <div class="report-card">
+                  <div class="report-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 3v18M3 12h18" />
+                      <circle cx="12" cy="12" r="9" />
+                    </svg>
+                  </div>
+                  <h3>Báo cáo cảnh báo học vụ</h3>
+                  <p>Sinh viên cần tư vấn và hỗ trợ học tập.</p>
+                  <button class="btn btn-secondary btn-sm report-btn" type="button">
+                    Tạo báo cáo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script src="../js/app.js"></script>
+    <script>
+      async function downloadReport() {
+        const [students, courses, grades] = await Promise.all([
+          apiGet('/students'),
+          apiGet('/courses'),
+          apiGet('/grades'),
+        ]);
+        const rows = [
+          ['loai', 'so_luong'],
+          ['sinh_vien', students.length],
+          ['hoc_phan', courses.length],
+          ['bang_diem', grades.length],
+        ];
+        const csv = rows.map((row) => row.join(',')).join('\n');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        link.download = 'bao-cao-he-thong.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+      document
+        .getElementById('exportAll')
+        .addEventListener('click', () =>
+          downloadReport().catch((error) => showToast(error.message))
+        );
+      document
+        .querySelectorAll('.report-btn')
+        .forEach((button) =>
+          button.addEventListener('click', () =>
+            downloadReport().catch((error) => showToast(error.message))
+          )
+        );
+    </script>
+  </body>
+</html>

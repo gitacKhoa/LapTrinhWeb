@@ -1,84 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lecturer Dashboard — Academic Record</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/design-system.css">
-</head>
-<body>
-<div class="app-shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="system-name">Academic Record</div>
-      <div class="system-tag">LECTURER</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lecturer Dashboard — Academic Record</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/design-system.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="system-name">Academic Record</div>
+          <div class="system-tag">LECTURER</div>
+        </div>
+        <div class="sidebar-role">
+          <div class="label">Đăng nhập với vai trò</div>
+          <div class="value">Giảng viên</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="lecturer-dashboard.html" class="active">Tổng quan giảng dạy</a>
+          <a href="grade-entry.html">Nhập điểm</a>
+          <a href="my-courses.html">Học phần của tôi</a>
+          <a href="class-statistics.html">Thống kê lớp học</a>
+        </nav>
+        <div class="sidebar-foot">
+          © 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 17l5-5-5-5" />
+              <path d="M15 12H3" />
+              <path d="M21 19V5a2 2 0 0 0-2-2h-6" /></svg
+            >Đăng xuất</a
+          >
+        </div>
+      </aside>
+
+      <div>
+        <header class="topbar">
+          <div class="topbar-right">
+            <button class="topbar-icon-btn">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg
+              ><span class="dot"></span>
+            </button>
+            <div class="topbar-user">
+              <div class="avatar">NA</div>
+              <div class="who">
+                <div class="name">TS. Nguyễn Văn A</div>
+                <div class="role">Khoa CNTT</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div class="page-header">
+            <div class="eyebrow">ACADEMIC RECORD / 2026 / SEMESTER 01</div>
+            <h1 id="lecturerGreeting">Tổng quan giảng dạy</h1>
+            <div class="sub" id="lecturerSummary">Đang tải dữ liệu giảng dạy...</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h2>Teaching Overview</h2></div>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Học phần</th>
+                    <th>Lớp</th>
+                    <th class="num">Sinh viên</th>
+                    <th>Tiến độ</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="teachingBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-header"><h2>Pending Tasks</h2></div>
+              <div class="panel-body" id="pendingBody"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><h2>Grade Status</h2></div>
+              <div class="panel-body" id="statusBody"></div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
-    <div class="sidebar-role">
-      <div class="label">Đăng nhập với vai trò</div>
-      <div class="value">Giảng viên</div>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="lecturer-dashboard.html" class="active">Tổng quan giảng dạy</a>
-      <a href="grade-entry.html">Nhập điểm</a>
-      <a href="my-courses.html">Học phần của tôi</a>
-      <a href="class-statistics.html">Thống kê lớp học</a>
-    </nav>
-    <div class="sidebar-foot">© 2026 Phòng Đào tạo<a class="sidebar-logout" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>Đăng xuất</a></div>
-  </aside>
-
-  <div>
-    <header class="topbar">
-      <div class="topbar-right">
-        <button class="topbar-icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
-        <div class="topbar-user"><div class="avatar">NA</div><div class="who"><div class="name">TS. Nguyễn Văn A</div><div class="role">Khoa CNTT</div></div></div>
-      </div>
-    </header>
-
-    <main class="content">
-      <div class="page-header">
-        <div class="eyebrow">ACADEMIC RECORD / 2026 / SEMESTER 01</div>
-        <h1 id="lecturerGreeting">Tổng quan giảng dạy</h1>
-        <div class="sub" id="lecturerSummary">Đang tải dữ liệu giảng dạy...</div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header"><h2>Teaching Overview</h2></div>
-        <div class="data-table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr><th>Học phần</th><th>Lớp</th><th class="num">Sinh viên</th><th>Tiến độ</th><th>Trạng thái</th><th></th></tr>
-            </thead>
-            <tbody id="teachingBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-header"><h2>Pending Tasks</h2></div>
-          <div class="panel-body" id="pendingBody"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><h2>Grade Status</h2></div>
-          <div class="panel-body" id="statusBody"></div>
-        </div>
-      </div>
-    </main>
-  </div>
-</div>
-</body>
-<script src="../js/data.js"></script><script src="../js/app.js"></script><script>
-  const teachingBody = document.getElementById('teachingBody');
-  teachingBody.innerHTML = '';
-  apiGet('/courses').then(courses => {
-    document.getElementById('lecturerSummary').textContent = `${courses.length} học phần đang phụ trách`;
-    courses.forEach(course => { const badge = statusBadge(course.status); const row = document.createElement('tr'); row.innerHTML = `<td class="name-cell">${course.code} — ${course.name}</td><td class="mono">${course.className || '—'}</td><td class="num mono">${course.students}</td><td>—</td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a href="grade-entry.html?course=${course.id}" class="btn btn-primary btn-sm">Nhập điểm</a></td>`; teachingBody.appendChild(row); });
-    const pending = courses.filter(course => course.status !== 'published');
-    document.getElementById('pendingBody').innerHTML = pending.length ? pending.map(course => `<div class="timeline-item"><div class="timeline-dot" style="background:var(--warning);"></div><div><div class="text">${course.code} — cần xử lý bảng điểm</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`).join('') : '<div class="state-block"><div class="state-title">Không có nhiệm vụ đang chờ</div></div>';
-    document.getElementById('statusBody').innerHTML = courses.length ? courses.map(course => `<div class="timeline-item"><div class="timeline-dot"></div><div><div class="text">${course.code} — ${course.name}</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`).join('') : '<div class="state-block"><div class="state-title">Chưa có học phần</div></div>';
-  }).catch(error => showToast(error.message));
-</script>
+  </body>
+  <script src="../js/data.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const teachingBody = document.getElementById('teachingBody');
+    teachingBody.innerHTML = '';
+    apiGet('/courses')
+      .then((courses) => {
+        document.getElementById('lecturerSummary').textContent =
+          `${courses.length} học phần đang phụ trách`;
+        courses.forEach((course) => {
+          const badge = statusBadge(course.status);
+          const row = document.createElement('tr');
+          row.innerHTML = `<td class="name-cell">${course.code} — ${course.name}</td><td class="mono">${course.className || '—'}</td><td class="num mono">${course.students}</td><td>—</td><td><span class="badge ${badge.cls}">${badge.label}</span></td><td><a href="grade-entry.html?course=${course.id}" class="btn btn-primary btn-sm">Nhập điểm</a></td>`;
+          teachingBody.appendChild(row);
+        });
+        const pending = courses.filter((course) => course.status !== 'published');
+        document.getElementById('pendingBody').innerHTML = pending.length
+          ? pending
+              .map(
+                (course) =>
+                  `<div class="timeline-item"><div class="timeline-dot" style="background:var(--warning);"></div><div><div class="text">${course.code} — cần xử lý bảng điểm</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`
+              )
+              .join('')
+          : '<div class="state-block"><div class="state-title">Không có nhiệm vụ đang chờ</div></div>';
+        document.getElementById('statusBody').innerHTML = courses.length
+          ? courses
+              .map(
+                (course) =>
+                  `<div class="timeline-item"><div class="timeline-dot"></div><div><div class="text">${course.code} — ${course.name}</div><div class="time"><span class="badge ${statusBadge(course.status).cls}">${statusBadge(course.status).label}</span></div></div></div>`
+              )
+              .join('')
+          : '<div class="state-block"><div class="state-title">Chưa có học phần</div></div>';
+      })
+      .catch((error) => showToast(error.message));
+  </script>
 </html>

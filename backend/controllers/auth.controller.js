@@ -19,7 +19,8 @@ async function login(req, res) {
   const validPassword = user.mat_khau.startsWith('$2')
     ? await bcrypt.compare(password, user.mat_khau)
     : password === user.mat_khau;
-  if (!validPassword) return res.status(401).json({ message: 'Tài khoản, mật khẩu hoặc vai trò không đúng' });
+  if (!validPassword)
+    return res.status(401).json({ message: 'Tài khoản, mật khẩu hoặc vai trò không đúng' });
 
   if (!user.mat_khau.startsWith('$2')) {
     await userModel.updatePassword(user.id, await bcrypt.hash(password, 12));
