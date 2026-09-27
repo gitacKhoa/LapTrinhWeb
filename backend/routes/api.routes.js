@@ -157,9 +157,10 @@ router.get(
     if (user.role === 'sinh_vien') {
       const [stats] = await pool.query(
         `SELECT COALESCE(SUM(c.tin_chi), 0) AS credits,
-      ROUND(COALESCE(AVG(g.diem_tong_ket), 0) / 10 * 4, 2) AS gpa
-      FROM users u LEFT JOIN grades g ON g.sinh_vien_id = u.id
-      LEFT JOIN courses c ON c.id = g.mon_hoc_id
+      ROUND(COALESCE(AVG(CASE WHEN g.trang_thai = 'published' THEN g.diem_tong_ket END), 0) / 10 * 4, 2) AS gpa
+      FROM users u LEFT JOIN course_students cs ON cs.sinh_vien_id = u.id
+      LEFT JOIN courses c ON c.id = cs.mon_hoc_id
+      LEFT JOIN grades g ON g.sinh_vien_id = u.id AND g.mon_hoc_id = c.id
       WHERE u.id = ? AND u.vai_tro = 'sinh_vien' GROUP BY u.id`,
         [req.auth.id]
       );
@@ -178,9 +179,10 @@ router.get(
       `SELECT u.id, u.mssv AS studentId, u.ho_ten AS name, u.email,
     u.nganh AS major, u.khoa_hoc AS cohort, u.so_dien_thoai AS phone, u.dia_chi AS address,
     u.trang_thai AS status, COALESCE(SUM(c.tin_chi), 0) AS credits,
-    ROUND(COALESCE(AVG(g.diem_tong_ket), 0) / 10 * 4, 2) AS gpa
-    FROM users u LEFT JOIN grades g ON g.sinh_vien_id = u.id
-    LEFT JOIN courses c ON c.id = g.mon_hoc_id
+    ROUND(COALESCE(AVG(CASE WHEN g.trang_thai = 'published' THEN g.diem_tong_ket END), 0) / 10 * 4, 2) AS gpa
+    FROM users u LEFT JOIN course_students cs ON cs.sinh_vien_id = u.id
+    LEFT JOIN courses c ON c.id = cs.mon_hoc_id
+    LEFT JOIN grades g ON g.sinh_vien_id = u.id AND g.mon_hoc_id = c.id
     WHERE u.id = ? AND u.vai_tro = 'sinh_vien' GROUP BY u.id`,
       [req.auth.id]
     );
@@ -227,8 +229,9 @@ router.get(
   asyncRoute(async (req, res) => {
     const [rows] = await pool.query(`SELECT u.id, u.mssv AS studentId, u.ho_ten AS name, u.email,
     u.nganh AS major, u.khoa_hoc AS cohort, u.so_dien_thoai AS phone, u.dia_chi AS address, COALESCE(SUM(c.tin_chi), 0) AS credits,
-    ROUND(COALESCE(AVG(g.diem_tong_ket), 0) / 10 * 4, 2) AS gpa, u.trang_thai AS status
-    FROM users u LEFT JOIN grades g ON g.sinh_vien_id = u.id LEFT JOIN courses c ON c.id = g.mon_hoc_id
+    ROUND(COALESCE(AVG(CASE WHEN g.trang_thai = 'published' THEN g.diem_tong_ket END), 0) / 10 * 4, 2) AS gpa, u.trang_thai AS status
+    FROM users u LEFT JOIN course_students cs ON cs.sinh_vien_id = u.id LEFT JOIN courses c ON c.id = cs.mon_hoc_id
+    LEFT JOIN grades g ON g.sinh_vien_id = u.id AND g.mon_hoc_id = c.id
     WHERE u.vai_tro = 'sinh_vien' GROUP BY u.id ORDER BY u.id DESC`);
     res.json(rows);
   })
@@ -265,7 +268,7 @@ router.get(
   '/students/:id',
   asyncRoute(async (req, res) => {
     const [rows] = await pool.query(
-      "SELECT u.id, u.mssv AS studentId, u.ho_ten AS name, u.email, u.nganh AS major, u.khoa_hoc AS cohort, u.trang_thai AS status, u.so_dien_thoai AS phone, u.dia_chi AS address, COALESCE(SUM(c.tin_chi),0) AS credits, ROUND(COALESCE(AVG(g.diem_tong_ket),0)/10*4,2) AS gpa FROM users u LEFT JOIN grades g ON g.sinh_vien_id=u.id LEFT JOIN courses c ON c.id=g.mon_hoc_id WHERE u.id=? AND u.vai_tro='sinh_vien' GROUP BY u.id",
+      "SELECT u.id, u.mssv AS studentId, u.ho_ten AS name, u.email, u.nganh AS major, u.khoa_hoc AS cohort, u.trang_thai AS status, u.so_dien_thoai AS phone, u.dia_chi AS address, COALESCE(SUM(c.tin_chi),0) AS credits, ROUND(COALESCE(AVG(CASE WHEN g.trang_thai='published' THEN g.diem_tong_ket END),0)/10*4,2) AS gpa FROM users u LEFT JOIN course_students cs ON cs.sinh_vien_id=u.id LEFT JOIN courses c ON c.id=cs.mon_hoc_id LEFT JOIN grades g ON g.sinh_vien_id=u.id AND g.mon_hoc_id=c.id WHERE u.id=? AND u.vai_tro='sinh_vien' GROUP BY u.id",
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ message: 'Không tìm thấy sinh viên' });
@@ -460,8 +463,8 @@ router.get(
     }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const [rows] = await pool.query(
-      `SELECT g.id, cs.sinh_vien_id AS studentId, u.mssv, u.ho_ten AS name,
-    cs.mon_hoc_id AS courseId, c.ma_mon AS code, c.ten_mon AS courseName, g.diem_chuyen_can AS attendance,
+      `SELECT cs.sinh_vien_id AS studentId, u.mssv, u.ho_ten AS name,
+    c.id AS courseId, c.ma_mon AS code, c.ten_mon AS courseName, g.diem_chuyen_can AS attendance,
     g.diem_giua_ky AS midterm, g.diem_cuoi_ky AS final, g.diem_tong_ket AS total, g.ghi_chu AS note,
     g.trang_thai AS status, c.tin_chi AS credits, c.hoc_ky AS semester,
     CASE WHEN g.diem_tong_ket >= 8.5 THEN 'A' WHEN g.diem_tong_ket >= 7 THEN 'B'
@@ -477,21 +480,14 @@ router.get(
 router.get(
   '/terms',
   asyncRoute(async (req, res) => {
-    const [rows] =
-      await pool.query(`SELECT t.*, COUNT(DISTINCT c.id) AS courses, COUNT(DISTINCT g.sinh_vien_id) AS students
-    FROM terms t LEFT JOIN courses c ON c.hoc_ky=t.ma_hoc_ky LEFT JOIN grades g ON g.mon_hoc_id=c.id
-    GROUP BY t.id ORDER BY t.ngay_bat_dau DESC`);
-    res.json(rows);
+    res.status(410).json({ message: 'Module học kỳ đã bị vô hiệu hóa và dữ liệu được giữ nguyên trong cơ sở dữ liệu.' });
   })
 );
 
 router.get(
   '/exams',
   asyncRoute(async (req, res) => {
-    const [rows] =
-      await pool.query(`SELECT e.*, t.ma_hoc_ky AS termCode, c.ma_mon AS courseCode, c.ten_mon AS courseName
-    FROM exams e JOIN terms t ON t.id=e.term_id JOIN courses c ON c.id=e.course_id ORDER BY e.bat_dau`);
-    res.json(rows);
+    res.status(410).json({ message: 'Module kỳ thi đã bị vô hiệu hóa và dữ liệu được giữ nguyên trong cơ sở dữ liệu.' });
   })
 );
 

@@ -26,7 +26,6 @@
           <a href="students.html" class="active">Sinh viên</a>
           <a href="lecturers.html">Giảng viên</a>
           <a href="courses.html">Học phần</a>
-          <a href="exams.html">Kỳ thi / Học kỳ</a>
           <a href="grade-approval.html">Duyệt điểm</a>
           <a href="system-reports.html">Báo cáo hệ thống</a>
         </nav>
@@ -100,18 +99,42 @@
           document.getElementById('studentName').textContent = s.name;
           document.getElementById('studentMeta').textContent = `${s.major} — Khóa ${s.cohort}`;
 
-          const remaining = 130 - s.credits;
-          document.getElementById('summaryRow').innerHTML = `
-    <div class="stat-cell"><div class="stat-label">GPA</div><div class="stat-value">${s.gpa.toFixed(2)}</div></div>
-    <div class="stat-cell"><div class="stat-label">Tổng tín chỉ</div><div class="stat-value">${s.credits}</div></div>
-    <div class="stat-cell"><div class="stat-label">Tín chỉ đạt</div><div class="stat-value">${s.credits}</div></div>
-    <div class="stat-cell"><div class="stat-label">Tín chỉ còn thiếu</div><div class="stat-value">${remaining > 0 ? remaining : 0}</div></div>`;
+          return apiGet(`/grades?studentId=${s.id}`).then((grades) => {
+            const totalCredits = grades.reduce(
+              (sum, g) => sum + (Number(g.credits) || 0),
+              0
+            );
+            const publishedGrades = grades.filter(
+              (g) => g.status === 'published' && g.total !== null && g.total !== undefined
+            );
+            const passedPublishedGrades = publishedGrades.filter(
+              (g) => Number(g.total) >= 4
+            );
+            const earnedCredits = passedPublishedGrades.reduce(
+              (sum, g) => sum + (Number(g.credits) || 0),
+              0
+            );
+            const weightedScore = publishedGrades.reduce(
+              (sum, g) => sum + (Number(g.total) || 0) * (Number(g.credits) || 0),
+              0
+            );
+            const creditsForGpa = publishedGrades.reduce(
+              (sum, g) => sum + (Number(g.credits) || 0),
+              0
+            );
+            const gpa = creditsForGpa ? Number((weightedScore / creditsForGpa).toFixed(2)) : 0;
+            const remaining = Math.max(0, 130 - earnedCredits);
 
-          const body = document.getElementById('historyBody');
-          return apiGet(`/grades?studentId=${s.id}`).then((grades) =>
+            document.getElementById('summaryRow').innerHTML = `
+    <div class="stat-cell"><div class="stat-label">GPA</div><div class="stat-value">${gpa.toFixed(2)}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tổng tín chỉ</div><div class="stat-value">${totalCredits}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tín chỉ đạt</div><div class="stat-value">${earnedCredits}</div></div>
+    <div class="stat-cell"><div class="stat-label">Tín chỉ còn thiếu</div><div class="stat-value">${remaining}</div></div>`;
+
+            const body = document.getElementById('historyBody');
             grades.forEach((g) => {
               const tr = document.createElement('tr');
-              const published = g.status === 'published';
+              const published = g.status === 'published' && g.total !== null && g.total !== undefined;
               tr.innerHTML = `
       <td class="id-cell">${g.code}</td>
       <td class="name-cell">${g.courseName}</td>
@@ -120,8 +143,8 @@
       <td>${published ? `<span class="badge success">${g.letter}</span>` : `<span class="badge neutral">Chưa công bố</span>`}</td>
       <td class="mono">${g.semester}</td>`;
               body.appendChild(tr);
-            })
-          );
+            });
+          });
         })
         .catch((error) => showToast(error.message));
     </script>
